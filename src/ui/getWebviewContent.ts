@@ -49,10 +49,38 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
         <section id="notes-form">
           <vscode-text-field id="title" value="${note.title}" placeholder="Enter a name">ID:</vscode-text-field>
           <vscode-text-area id="content"value="${note.content}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15>Query</vscode-text-area>
-          <vscode-text-field id="title" value="" placeholder="Enter a name">DB Info:</vscode-text-field>
-          <vscode-text-area id="content"value="" placeholder="" resize="vertical" rows=5>Binding Variable:</vscode-text-area>
-          <vscode-text-field id="tags-input" value="${formattedTags}" placeholder="Add tags separated by commas">Description</vscode-text-field>
-          <vscode-button id="submit-button">Save</vscode-button>
+          <label for="my-dropdown">DB Info option:</label>
+          <vscode-dropdown id="my-dropdown">
+            <vscode-option>isb_frw</vscode-option>
+            <vscode-option>cbz_frw</vscode-option>
+            <vscode-option>되고 있는거지</vscode-option>
+          </vscode-dropdown>
+          <vscode-data-grid id="basic-grid" aria-label="Basic">
+            <vscode-data-grid-row row-type="header">
+              <vscode-data-grid-cell cell-type="columnheader" grid-column="1">Parameter</vscode-data-grid-cell>
+              <vscode-data-grid-cell cell-type="columnheader" grid-column="2">Value</vscode-data-grid-cell>
+              <vscode-data-grid-cell cell-type="columnheader" grid-column="3">Data Type</vscode-data-grid-cell>
+            </vscode-data-grid-row>
+            <vscode-data-grid-row>
+              <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
+            </vscode-data-grid-row>
+            <vscode-data-grid-row>
+              <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
+            </vscode-data-grid-row>
+            <vscode-data-grid-row>
+              <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
+              <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
+            </vscode-data-grid-row>
+          </vscode-data-grid>
+          <vscode-text-area id="content"value="" placeholder="" resize="vertical" rows=5>Description:</vscode-text-area>
+          <vscode-button id="submit-button">Set Param</vscode-button>
+          <vscode-button id="submit-button">Query Test</vscode-button>
+          <vscode-button id="submit-button">Query Save</vscode-button>
         </section>
         <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
       </body>

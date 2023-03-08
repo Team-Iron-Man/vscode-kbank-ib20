@@ -8,6 +8,10 @@ import {
   vsCodeTag,
   vsCodeTextArea,
   vsCodeTextField,
+  vsCodeDropdown,
+  vsCodeDataGrid,
+  vsCodeDataGridCell,
+  vsCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit";
 
 // In order to use the Webview UI Toolkit web components they
@@ -17,7 +21,11 @@ provideVSCodeDesignSystem().register(
   vsCodeButton(),
   vsCodeTag(),
   vsCodeTextArea(),
-  vsCodeTextField()
+  vsCodeTextField(),
+  vsCodeDropdown(),
+  vsCodeDataGrid(),
+  vsCodeDataGridCell(),
+  vsCodeDataGridRow(),
 );
 
 // Get access to the VS Code API from within the webview context
