@@ -4,13 +4,14 @@
   "description": "ib20 sql dbio soultion",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.76.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vscode-kbank-ib20.helloWorld"
+    "onCommand:vscode-kbank-ib20.helloWorld",
+    "onNotebook:my-notebook"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,8 +19,87 @@
       {
         "command": "vscode-kbank-ib20.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "sqlmapExplorer.addEntry",
+        "title": "Add Namespace",
+        "icon": {
+          "light": "resources/light/plus.svg",
+          "dark": "resources/dark/plus.svg"
+        }
+      },
+      {
+        "command": "sqlmapExplorer.delEntry",
+        "title": "Delete Namespace",
+        "icon": {
+          "light": "resources/light/minus.svg",
+          "dark": "resources/dark/minus.svg"
+        }
+      },
+      {
+        "command": "sqlmapExplorer.refreshEntry",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "package-explorer",
+          "title": "Package Explorer",
+          "icon": "resources/media/dep.svg"
+        }
+      ]
+    },
+    "views": {
+      "package-explorer": [
+        {
+          "type": "webview",
+          "id": "sqlconfigExplorer",
+          "name": "Sql Config Explorer"
+        },
+        {
+          "type": "tree",
+          "id": "sqlmapExplorer",
+          "name": "Sql Namespace Explorer"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "sqlmapExplorer.addEntry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.delEntry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.refreshEntry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        }
+      ]
+      
+    },
+    "notebooks": [
+      {
+          "id": "my-notebook",
+          "type": "my-notebook",
+          "displayName": "My Notebook",
+          "selector": [
+              {
+                  "filenamePattern": "*.sql"
+              }
+          ]
+      }
+  ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
