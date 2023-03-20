@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
 	vscode.window.registerTreeDataProvider('sqlmapExplorer',sqlmapProvider); //viewID:sqlmapExplorer
 	vscode.commands.registerCommand('sqlmapExplorer.addEntry', 
-		() => openUntitledFile() ); // + 아이콘 클릭
+		() => openUntitledFile(context, panel) ); // + 아이콘 클릭
 	vscode.commands.registerCommand('sqlmapExplorer.delEntry', 
 		() => vscode.window.showInformationMessage(`Successfully called delete NameSpace.`));	// - 아이콘 클릭
 	context.subscriptions.push(
@@ -94,13 +94,50 @@ function sqlPanle(panel: vscode.WebviewPanel, context: vscode.ExtensionContext){
 	
 
 }
-async function openUntitledFile() {	// + 아이콘 클릭 시, 화면 중앙 webview panel open 한다.
+async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.WebviewPanel | undefined = undefined) {	// + 아이콘 클릭 시, 화면 중앙 webview panel open 한다.
 	//To DO.. webview panel로 오픈하도록 수정 필요.
-	const document = await vscode.workspace.openTextDocument({
-		content: undefined,
-		language: 'sql'
-	}); 
-	vscode.window.showTextDocument(document);
+	// const document = await vscode.workspace.openTextDocument({
+	// 	content: undefined,
+	// 	language: 'sql'
+	// }); 
+	// vscode.window.showTextDocument(document);
+
+	let notes: Note[] = [];
+	const newNote: Note = {
+		id: "id",
+		title: "Query",
+		content: "",
+		tags: ["Personal"],
+	  };
+	  
+	if (!panel) {
+		panel = vscode.window.createWebviewPanel("noteDetailView", 'matchingNote.title', vscode.ViewColumn.One, {
+			// Enable JavaScript in the webview
+			enableScripts: true,
+			// Restrict the webview to only load resources from the `out` directory
+			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "out")],
+			});
+	}
+	panel.title = 'matchingNote.title';
+	panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
+
+	panel.webview.onDidReceiveMessage((message) => {
+	const command = message.command;
+	const note = message.note;
+	switch (command) {
+		case "updateNote":
+		const updatedNoteId = note.id;
+		const copyOfNotesArray = [...notes];
+		const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
+		copyOfNotesArray[matchingNoteIndex] = note;
+		notes = copyOfNotesArray;
+		panel
+			? ((panel.title = note.title),
+			(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
+			: null;
+		break;
+	}
+	});
   }
 
 // This method is called when your extension is deactivated
