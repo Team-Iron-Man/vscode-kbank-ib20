@@ -12,6 +12,7 @@ import {
   vsCodeDataGrid,
   vsCodeDataGridCell,
   vsCodeDataGridRow,
+  vsCodeDivider,
 } from "@vscode/webview-ui-toolkit";
 
 // In order to use the Webview UI Toolkit web components they
@@ -26,10 +27,12 @@ provideVSCodeDesignSystem().register(
   vsCodeDataGrid(),
   vsCodeDataGridCell(),
   vsCodeDataGridRow(),
+  vsCodeDivider(),
 );
 
 // Get access to the VS Code API from within the webview context
 const vscode = acquireVsCodeApi();
+const format = require('./sql-styler');
 
 // Just like a regular webpage we need to wait for the webview
 // DOM to load before we can reference any of the HTML elements
@@ -43,8 +46,14 @@ function main() {
   // To get improved type annotations/IntelliSense the associated class for
   // a given toolkit component can be imported and used to type cast a reference
   // to the element (i.e. the `as Button` syntax)
-  const saveButton = document.getElementById("submit-button") as Button;
-  saveButton.addEventListener("click", () => saveNote());
+ 
+  // const saveButton = document.getElementById("submit-button") as Button;
+  // saveButton.addEventListener("click", () => saveNote());
+
+  const sqlButton3 = document.getElementById("submit-button3") as Button;
+  sqlButton3.addEventListener("click", () => refresh());
+
+  
 }
 
 // Stores the currently opened note info so we know the ID when we update it on save
@@ -58,10 +67,21 @@ function setVSCodeMessageListener() {
     switch (command) {
       case "receiveDataInWebview":
         openedNote = noteData;
-        renderTags(openedNote.tags);
+        //renderTags(openedNote.tags);
         break;
     }
   });
+}
+
+function refresh() {
+  const noteInput = document.getElementById("content") as TextArea;
+  console.log("noteInput");
+  const formatted = format(noteInput.value);
+  noteInput.value = formatted;
+  console.log(formatted);
+  
+  
+
 }
 
 function saveNote() {

@@ -1,5 +1,7 @@
 const { build } = require("esbuild");
 const { copy } = require("esbuild-plugin-copy");
+const path = require('path');
+const fs = require('fs');
 
 //@ts-check
 /** @typedef {import('esbuild').BuildOptions} BuildOptions **/
@@ -35,11 +37,27 @@ const webviewConfig = {
     copy({
       resolveFrom: "cwd",
       assets: {
-        from: ["./src/webview/*.css"],
+        from: ["./src/webview/*.css","./src/webview/*.js"],
         to: ["./out"],
       },
     }),
   ],
+};
+
+const workerEntryPoints = [
+	'vs/language/json/json.worker.js',
+	'vs/language/css/css.worker.js',
+	'vs/language/html/html.worker.js',
+	'vs/language/typescript/ts.worker.js',
+	'vs/editor/editor.worker.js'
+];
+
+const workerEntryConfig = {
+	entryPoints: workerEntryPoints.map((entry) => `../node_modules/monaco-editor/esm/${entry}`),
+	bundle: true,
+	format: 'iife',
+	outbase: '../node_modules/monaco-editor/esm/',
+	outdir: path.join(__dirname, 'dist')
 };
 
 // This watch config adheres to the conventions of the esbuild-problem-matchers
@@ -62,6 +80,7 @@ const watchConfig = {
   },
 };
 
+
 // Build script
 (async () => {
   const args = process.argv.slice(2);
@@ -75,6 +94,10 @@ const watchConfig = {
       });
       await build({
         ...webviewConfig,
+        ...watchConfig,
+      });
+      await build({
+        ...workerEntryConfig,
         ...watchConfig,
       });
       console.log("[watch] build finished");

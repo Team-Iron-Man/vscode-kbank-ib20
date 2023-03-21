@@ -3,6 +3,9 @@ import { Note } from "../types/Note";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 
+
+
+
 /**
  * Defines and returns the HTML that should be rendered within a notepad note view (aka webview panel).
  *
@@ -15,7 +18,7 @@ import { getNonce } from "../utilities/getNonce";
 export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Note) {
   const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
   const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
-
+  
   const nonce = getNonce();
   const formattedTags = note.tags ? note.tags.join(", ") : null;
 
@@ -47,14 +50,36 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
           <div id="tags-container"></div>
         </header>
         <section id="notes-form">
-          <vscode-text-field id="title" value="${note.title}" placeholder="Enter a name">ID:</vscode-text-field>
-          <vscode-text-area id="content"value="${note.content}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15>Query</vscode-text-area>
-          <label for="my-dropdown">DB Info option:</label>
-          <vscode-dropdown id="my-dropdown">
+          <vscode-divider role="separator"></vscode-divider>
+          
+          <vscode-text-field id="title" value="" placeholder="Enter a name" type="text">Sql Map Id*</vscode-text-field>
+
+          <div>
+          <label for="type-dropdown">Type:</label>
+            <vscode-dropdown id="type-dropdown" position="below">
+              <vscode-option>SELECT</vscode-option>
+              <vscode-option>UPDATE</vscode-option>
+              <vscode-option>INSERT</vscode-option>
+              <vscode-option>UPDATE</vscode-option>
+            </vscode-dropdown>
+            <label for="use-dropdown">Use:</label>
+            <vscode-dropdown id="use-dropdown" position="below">
+              <vscode-option>Y</vscode-option>
+              <vscode-option>N</vscode-option>
+            </vscode-dropdown> 
+          </div>
+
+          <vscode-text-area id="content"value="${note.content}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>
+          
+          <vscode-divider role="separator"></vscode-divider>
+          
+          <label for="info-dropdown">DB Info:</label>
+          <vscode-dropdown id="info-dropdown" position="below">
             <vscode-option>isb_frw</vscode-option>
             <vscode-option>cbz_frw</vscode-option>
             <vscode-option>되고 있는거지</vscode-option>
           </vscode-dropdown>
+          
           <vscode-data-grid id="basic-grid" aria-label="Basic">
             <vscode-data-grid-row row-type="header">
               <vscode-data-grid-cell cell-type="columnheader" grid-column="1">Parameter</vscode-data-grid-cell>
@@ -77,10 +102,16 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
               <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
             </vscode-data-grid-row>
           </vscode-data-grid>
-          <vscode-text-area id="content"value="" placeholder="" resize="vertical" rows=5>Description:</vscode-text-area>
-          <vscode-button id="submit-button">Set Param</vscode-button>
-          <vscode-button id="submit-button">Query Test</vscode-button>
-          <vscode-button id="submit-button">Query Save</vscode-button>
+          <div>
+            <vscode-button id="submit-button1">Set Param</vscode-button>
+            <vscode-button id="submit-button2">Query Test</vscode-button>
+          </div>
+          <vscode-divider role="separator"></vscode-divider>
+          <vscode-text-area id="description"value="" placeholder="" resize="vertical" rows=5>Description</vscode-text-area>
+          <input type="text"/>
+          <div>
+            <vscode-button id="submit-button3">Query Save</vscode-button>
+          </div>
         </section>
         <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
       </body>
