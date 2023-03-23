@@ -67,7 +67,6 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		this.refresh();
 	}
 	
-
 	/**
 	 * Given the path to package.json, read all its dependencies and devDependencies.
 	 */

@@ -107,7 +107,6 @@ const jsonData = [
 let sqlcfgIds: Set<string> = new Set();
 const vscode = acquireVsCodeApi();
 
-
 (function () {
 
   for (let i = 0; i < jsonData.length; i++) {
@@ -129,6 +128,7 @@ const vscode = acquireVsCodeApi();
     //window.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
     vscode.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
 
+    //window.postMessage(selectedOption);
   });
   
 
@@ -137,6 +137,7 @@ const vscode = acquireVsCodeApi();
 // Listen for messages from the extension
 window.addEventListener('message', (event: MessageEvent) => {
   let reqData = event.data;
+  console.log('Post Evt Listen -> Received RESULT:' + reqData);
   //TODO: reqData(SQL CONFIG)통해서, namespace,query DB조회.
   let queryList: Map<string, string> = new Map();
   for (let i = 0; i < jsonData.length; i++) {

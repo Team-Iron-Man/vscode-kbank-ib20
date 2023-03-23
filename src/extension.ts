@@ -81,6 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('sqlmapExplorer.delEntry', () => vscode.window.showInformationMessage(`Successfully called delete NameSpace.`));	// - 아이콘 클릭
 	
 	context.subscriptions.push(vscode.commands.registerCommand('sqlmapExplorer.refreshEntry', () => {sqlmapProvider.refresh();}));	//refresh
+
 	context.subscriptions.push(disposable);
 }
 

@@ -8,7 +8,6 @@ import { SqlmapDataExplorer,Dependency } from './sqlmapDataExplorer';
 export class SqlconfigExplorer {
   constructor(context: vscode.ExtensionContext,sqlmapDataExplorer: SqlmapDataExplorer) {
     const configProvider = new SqlconfigProvider(context.extensionUri, sqlmapDataExplorer);
-
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(SqlconfigProvider.viewType, configProvider
       ));
@@ -75,7 +74,6 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
   */
    private _getHtmlForWebView(webview: vscode.Webview, extensionUri: Uri) {
     //정의된 javascript를 통해, html 동적으로 dropdown 항목 만들어주기.
-  
     const srcUri = getUri(webview, extensionUri, ["out", "getsqlconfigLists.js"]);
     console.log("sqlconfigExplorerTS=>_getHtmlForWebView srcUri:" + srcUri);
     //<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:;">
