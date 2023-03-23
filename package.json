@@ -17,6 +17,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "sampleExtension.run",
+        "title": "Run Sample Extension"
+      },
+      {
         "command": "vscode-kbank-ib20.helloWorld",
         "title": "IB20 DBIO"
       },

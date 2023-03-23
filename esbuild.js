@@ -44,6 +44,24 @@ const webviewConfig = {
   ],
 };
 
+const sqlConfigList = {
+  ...baseConfig,
+  target: "es2020",
+  format: "esm",
+  entryPoints: ["./src/ui/getsqlconfigLists.ts"],
+  outfile: "./out/getsqlconfigLists.js",
+  plugins: [
+    // Copy webview css files to `out` directory unaltered
+    copy({
+      resolveFrom: "cwd",
+      assets: {
+        from: ["./src/webview/*.css","./src/webview/*.js"],
+        to: ["./out"],
+      },
+    }),
+  ],
+};
+
 const workerEntryPoints = [
 	'vs/language/json/json.worker.js',
 	'vs/language/css/css.worker.js',
@@ -97,6 +115,10 @@ const watchConfig = {
         ...watchConfig,
       });
       await build({
+        ...sqlConfigList,
+        ...watchConfig,
+      });
+      await build({
         ...workerEntryConfig,
         ...watchConfig,
       });
@@ -105,6 +127,7 @@ const watchConfig = {
       // Build extension and webview code
       await build(extensionConfig);
       await build(webviewConfig);
+      await build(sqlConfigList);
       console.log("build complete");
     }
   } catch (err) {

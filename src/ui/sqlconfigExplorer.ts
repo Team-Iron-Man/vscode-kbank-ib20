@@ -3,11 +3,11 @@ import * as vscode from 'vscode';
 import { Disposable, Webview, WebviewPanel, window, Uri, ViewColumn } from "vscode";
 import { getUri } from "../utilities/getUri";
 //import { getNonce } from "../../utils/getNonce";
-
+import { SqlmapDataExplorer,Dependency } from './sqlmapDataExplorer';
 
 export class SqlconfigExplorer {
-  constructor(context: vscode.ExtensionContext) {
-    const configProvider = new SqlconfigProvider(context.extensionUri);
+  constructor(context: vscode.ExtensionContext,sqlmapDataExplorer: SqlmapDataExplorer) {
+    const configProvider = new SqlconfigProvider(context.extensionUri, sqlmapDataExplorer);
 
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(SqlconfigProvider.viewType, configProvider
@@ -21,8 +21,12 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
   public static currentWvVProvider: SqlconfigProvider | undefined;
   private _view: vscode.WebviewView | undefined;
   private _disposables: vscode.Disposable[] = [];
+  private _sqlmapDataExplorer?: SqlmapDataExplorer;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {
+  constructor(private readonly _extensionUri: vscode.Uri, sqlmapDataExplorer?: SqlmapDataExplorer) {
+    if(SqlmapDataExplorer){
+      this._sqlmapDataExplorer = sqlmapDataExplorer;
+    }
   }
 
   public resolveWebviewView(//IB20 SQLMAP CONFIG WEBVIEW 생성
@@ -44,9 +48,11 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
     //완성된 html을 전달
     this._view.webview.html = this._getHtmlForWebView(webviewView.webview, this._extensionUri);
     
-    this._view.webview.onDidReceiveMessage(message => {
-      console.log(`Received selected option: `+message);
-
+    this._view.webview.onDidReceiveMessage((message) => {
+      console.log(`2, sqlconfigExplorer : Received selected option: `+message);
+      if (message.type === 'myEvent' && this._sqlmapDataExplorer) {
+        this._sqlmapDataExplorer.handleMessage(message);
+      }
      });
     //TO DO select 된 sqlconfig값을 sqlmapDataExplorere에 postMessage...
 
@@ -69,8 +75,8 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
   */
    private _getHtmlForWebView(webview: vscode.Webview, extensionUri: Uri) {
     //정의된 javascript를 통해, html 동적으로 dropdown 항목 만들어주기.
-
-    const srcUri = getUri(webview, extensionUri, ["out/ui", "getsqlconfigLists.js"]);
+  
+    const srcUri = getUri(webview, extensionUri, ["out", "getsqlconfigLists.js"]);
     console.log("sqlconfigExplorerTS=>_getHtmlForWebView srcUri:" + srcUri);
     //<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:;">
     return /*html*/ `

@@ -61,6 +61,13 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
 	}
 
+	handleMessage(data: any): void {
+		// Webview에서 전달된 데이터를 처리
+		console.log('3. sqlmapDataExplorer : Received message:', data);
+		this.refresh();
+	}
+	
+
 	/**
 	 * Given the path to package.json, read all its dependencies and devDependencies.
 	 */

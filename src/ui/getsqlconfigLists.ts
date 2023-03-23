@@ -105,6 +105,8 @@ const jsonData = [
 ];
 
 let sqlcfgIds: Set<string> = new Set();
+const vscode = acquireVsCodeApi();
+
 
 (function () {
 
@@ -121,8 +123,12 @@ let sqlcfgIds: Set<string> = new Set();
   const selectElement = document.getElementById('sqlconfig-list-dropdown') as HTMLSelectElement;
   selectElement.addEventListener('change', (event: Event) => {
     const selectedOption = (event.target as HTMLSelectElement).value;
-    console.log(`Select Evt Listen -> POST MESSAGE [` + selectedOption + `]`);
-    window.postMessage(selectedOption);
+    console.log(`1. getsqlconfigLists: Select Evt Listen -> POST MESSAGE [` + selectedOption + `]`);
+    //window.postMessage(selectedOption);
+    // Webview에서 메시지 전달
+    //window.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
+    vscode.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
+
   });
   
 
@@ -131,8 +137,6 @@ let sqlcfgIds: Set<string> = new Set();
 // Listen for messages from the extension
 window.addEventListener('message', (event: MessageEvent) => {
   let reqData = event.data;
-  console.log('Post Evt Listen -> Received RESULT:' + reqData);
-
   //TODO: reqData(SQL CONFIG)통해서, namespace,query DB조회.
   let queryList: Map<string, string> = new Map();
   for (let i = 0; i < jsonData.length; i++) {
