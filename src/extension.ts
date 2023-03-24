@@ -74,8 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
-	new SqlconfigExplorer(context, sqlmapProvider); //왼쪽 상단 WebviewView Provider
-
+	new SqlconfigExplorer(context, sqlmapProvider); //왼쪽 상단 WebviewView Provider //주입된 프로바이더에 이벤트를 등록한다.
+	sqlmapProvider.sendMessage(`Hello from provider (${new Date().toISOString()})`);//등록된 리스너로 이벤트를 발생시킨다.
+	
 	vscode.window.registerTreeDataProvider('sqlmapExplorer',sqlmapProvider); //viewID:sqlmapExplorer
 	vscode.commands.registerCommand('sqlmapExplorer.addEntry', () => openUntitledFile(context, panel) ); // + 아이콘 클릭
 	vscode.commands.registerCommand('sqlmapExplorer.delEntry', () => vscode.window.showInformationMessage(`Successfully called delete NameSpace.`));	// - 아이콘 클릭

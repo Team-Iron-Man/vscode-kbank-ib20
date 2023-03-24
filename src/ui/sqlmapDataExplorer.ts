@@ -10,10 +10,17 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
-
+	private _onMessage = new vscode.EventEmitter<string>();
+	public readonly onMessage: vscode.Event<string> = this._onMessage.event;
+	
 	constructor(private workspaceRoot: string | undefined) {
-	}
 
+	}
+	
+	sendMessage(message: string) {
+		this._onMessage.fire(message);
+	}
+	
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
 	}
@@ -61,7 +68,7 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
 	}
 
-	handleMessage(data: any): void {
+	public handleMessage(data: any): void {
 		// Webview에서 전달된 데이터를 처리
 		console.log('3. sqlmapDataExplorer : Received message:', data);
 		this.refresh();

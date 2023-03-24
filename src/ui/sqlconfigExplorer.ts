@@ -6,8 +6,9 @@ import { getUri } from "../utilities/getUri";
 import { SqlmapDataExplorer,Dependency } from './sqlmapDataExplorer';
 
 export class SqlconfigExplorer {
-  constructor(context: vscode.ExtensionContext,sqlmapDataExplorer: SqlmapDataExplorer) {
+  constructor(context: vscode.ExtensionContext, sqlmapDataExplorer: SqlmapDataExplorer) {
     const configProvider = new SqlconfigProvider(context.extensionUri, sqlmapDataExplorer);
+
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(SqlconfigProvider.viewType, configProvider
       ));
@@ -25,6 +26,9 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
   constructor(private readonly _extensionUri: vscode.Uri, sqlmapDataExplorer?: SqlmapDataExplorer) {
     if(SqlmapDataExplorer){
       this._sqlmapDataExplorer = sqlmapDataExplorer;
+      this._sqlmapDataExplorer?.onMessage((message: string) => {
+        vscode.window.showInformationMessage(`Received message: ${message}`);
+      });
     }
   }
 
