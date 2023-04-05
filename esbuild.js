@@ -33,6 +33,7 @@ const webviewConfig = {
   entryPoints: ["./src/webview/main.ts"],
   outfile: "./out/webview.js",
   plugins: [
+    
     // Copy webview css files to `out` directory unaltered
     copy({
       resolveFrom: "cwd",
@@ -118,10 +119,10 @@ const watchConfig = {
         ...sqlConfigList,
         ...watchConfig,
       });
-      await build({
-        ...workerEntryConfig,
-        ...watchConfig,
-      });
+      // await build({
+      //   ...workerEntryConfig,
+      //   ...watchConfig,
+      // });
       console.log("[watch] build finished");
     } else {
       // Build extension and webview code

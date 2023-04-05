@@ -1,3 +1,4 @@
+
 class CustomArray extends Array {
     /**
      * @param {Array} stack 

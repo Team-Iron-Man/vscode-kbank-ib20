@@ -1,7 +1,5 @@
-
-const mysqlConfig = require('./mysqlConfig');
 import * as mysql from "mysql2/promise";
-
+const config = require('./config/mysqlConfig');
 
 interface IDbConfig {
     host: string;
@@ -31,6 +29,7 @@ interface IDbConfig {
       const connection = await this.pool.getConnection();
       try {
         const [rows] = await connection.query(sql, values);
+        await connection.query(sql, values);
         return rows;
       } finally {
         console.log("query finally");

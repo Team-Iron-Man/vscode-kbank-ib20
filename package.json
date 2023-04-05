@@ -54,7 +54,7 @@
         {
           "id": "package-explorer",
           "title": "Package Explorer",
-          "icon": "resources/media/dep.svg"
+          "icon": "resources/IB20_04.svg"
         }
       ]
     },
@@ -90,20 +90,19 @@
           "group": "navigation"
         }
       ]
-      
     },
     "notebooks": [
       {
-          "id": "my-notebook",
-          "type": "my-notebook",
-          "displayName": "My Notebook",
-          "selector": [
-              {
-                  "filenamePattern": "*.sql"
-              }
-          ]
+        "id": "my-notebook",
+        "type": "my-notebook",
+        "displayName": "My Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.sql"
+          }
+        ]
       }
-  ]
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

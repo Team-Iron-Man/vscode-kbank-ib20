@@ -111,6 +111,7 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 		panel = vscode.window.createWebviewPanel("noteDetailView", 'matchingNote.title', vscode.ViewColumn.One, {
 			// Enable JavaScript in the webview
 			enableScripts: true,
+			retainContextWhenHidden: true,
 			// Restrict the webview to only load resources from the `out` directory
 			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "out")],
 			});

@@ -1,5 +1,5 @@
 const mysqlConfig = require('./mysqlConfig');
-import MySQL from './mysqlController';
+import MySQL from '../controllers/mysqlController';
 
 async function getEmployees() {
   const db = new MySQL(mysqlConfig);
@@ -13,5 +13,3 @@ async function login(id: string) {
   const employees = await db.query(sql,[id]);
   //console.log("login result : "+employees);
 }
-
-login('20160377');

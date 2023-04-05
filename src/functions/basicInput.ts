@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { window } from 'vscode';
-import MySQL from '../modules/mysqlController';
-const mysqlConfig = require('../modules/mysqlConfig');
+import MySQL from '../modules/db/controllers/mysqlController';
+const mysqlConfig = require('../modules/db/connection/config/mysqlConfig');
 const crypto = require("crypto"); //Bcrypt
 
 /**
