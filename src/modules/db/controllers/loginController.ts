@@ -110,9 +110,9 @@ interface U2C_SQLMAP_QUERY_HISTORY{
   UPDATE_SEQ_NO : string;
 }
 
-async function login() {
+async function login(id:string):Promise<string> {
   const dao = new Dao();
-  const rows = await dao.query('SELECT * FROM U2A_USER WHERE USER_ID = ?', ['20160377']);
+  const rows = await dao.query('SELECT * FROM U2A_USER WHERE USER_ID = ?', [id]);
   console.log('rows',rows);
   const u2auser: U2AUSER[] = rows.map((row: any) => {
     return {
@@ -121,6 +121,7 @@ async function login() {
   });
   console.log(u2auser[0].password);
   await dao.close();
+  return u2auser[0].password;
 }
 
 async function u2csqlmapconfigSelect() {
@@ -129,6 +130,5 @@ async function u2csqlmapconfigSelect() {
     console.log(rows);
     await dao.close();
 }
-login();
 
 export {login, u2csqlmapconfigSelect};

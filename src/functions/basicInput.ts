@@ -4,10 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { window } from 'vscode';
-import MySQL from '../modules/db/controllers/mysqlController';
-const mysqlConfig = require('../modules/db/connection/config/mysqlConfig');
 const crypto = require("crypto"); //Bcrypt
-
+import {login} from '../modules/db/controllers/loginController';
 /**
  * Shows a pick list using window.showQuickPick().
  */
@@ -100,17 +98,3 @@ async function showPWInputBox (pw: string): Promise<boolean>{
 	input.show();
 	return showData;
 }
-
-async function login(id: string) {
-	let password: string  = '';
-
-	const db = new MySQL(mysqlConfig);
-	const sql = 'SELECT * FROM U2A_USER WHERE USER_ID = ?';
-	const resultData = await db.query(sql,[id]);
-	console.log("resultData"+resultData);
-	if(resultData === null || resultData.length > 0){
-		console.log("login result : "+resultData[0].PASSWORD);
-		password = resultData[0].PASSWORD;
-	}
-	return password; 
-  }
