@@ -52,9 +52,9 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
     this._view.webview.html = this._getHtmlForWebView(webviewView.webview, this._extensionUri);
     
     this._view.webview.onDidReceiveMessage((message) => {
-      console.log(`2, sqlconfigExplorer : Received selected option: `+message);
+      console.log(`2, sqlconfigExplorer : Received selected option: `+message.queryList);
       if (message.type === 'myEvent' && this._sqlmapDataExplorer) {
-        this._sqlmapDataExplorer.handleMessage(message);
+        this._sqlmapDataExplorer.handleMessage(message.queryList);
       }
      });
     //TO DO select 된 sqlconfig값을 sqlmapDataExplorere에 postMessage...

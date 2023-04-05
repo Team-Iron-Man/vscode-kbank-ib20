@@ -2,109 +2,100 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// const jsonFilePath = path.join(__dirname, 'sampleData.json');
-// const jsonData = fs.readFileSync(jsonFilePath, 'utf-8');
-// const data = JSON.parse(jsonData);
-
 export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
+	public _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 	private _onMessage = new vscode.EventEmitter<string>();
 	public readonly onMessage: vscode.Event<string> = this._onMessage.event;
-	
-	constructor(private workspaceRoot: string | undefined) {
 
-	}
-	
+	private rootNodes: Dependency[] = [];
+
+	constructor(private workspaceRoot: string | undefined) { }
+
 	sendMessage(message: string) {
 		this._onMessage.fire(message);
 	}
-	
-	refresh(): void {
-		this._onDidChangeTreeData.fire();
+
+	refresh(node?: Dependency): void {
+		if (node === undefined) {
+			console.log("refresh(undefined)");
+			this._onDidChangeTreeData.fire(undefined);
+		} else {
+			console.log("refresh(node):", node.label);
+			this._onDidChangeTreeData.fire(node);
+		}
 	}
+
 
 	getTreeItem(element: Dependency): vscode.TreeItem {
 		return element;
 	}
 
 	getChildren(element?: Dependency): Thenable<Dependency[]> {
-		// TODO: Implement logic to get child nodes
-		// if (!this.workspaceRoot) {
-		// 	vscode.window.showInformationMessage('No dependency in empty workspace!!!');
-		// 	return Promise.resolve([]);
-		// }
 
-		// if (element) {
-		// 	return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')));
-		// } else {
-		// 	const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
-		// 	if (this.pathExists(packageJsonPath)) {
-		// 		return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-		// 	} else {
-		// 		vscode.window.showInformationMessage('Workspace has no package.json');
-		// 		return Promise.resolve([]);
-		// 	}
-		// }
-		if (!element) {
-			return Promise.resolve([
-			  new Dependency('Parent 1', vscode.TreeItemCollapsibleState.Expanded),
-			  new Dependency('Parent 2', vscode.TreeItemCollapsibleState.Expanded)
-			]);
-		  } else if (element.label === 'Parent 1') {
-			return Promise.resolve([
-			  new Dependency('Child 1', vscode.TreeItemCollapsibleState.None),
-			  new Dependency('Child 2', vscode.TreeItemCollapsibleState.None)
-			]);
-		  } else if (element.label === 'Parent 2') {
-			return Promise.resolve([
-			  new Dependency('Child 3', vscode.TreeItemCollapsibleState.None),
-			  new Dependency('Child 4', vscode.TreeItemCollapsibleState.None)
-			]);
-		  } else {
-			return Promise.resolve([]);
-		  }
+		if (element === undefined) {
+			return Promise.resolve(this.rootNodes);
+		} else {
+			return Promise.resolve(element.children);
+		}
 
 	}
+	getParent(element: Dependency): Thenable<Dependency | undefined> {
+		console.log("2. getParent(item):", element.label);
+		element.parent = this.rootNodes[0];
+		return Promise.resolve(element.parent);
+	}
 
-	public handleMessage(data: any): void {
-		// Webview에서 전달된 데이터를 처리
-		console.log('3. sqlmapDataExplorer : Received message:', data);
+	initNode() {
+		this.rootNodes = [];
+		this._onDidChangeTreeData.fire();
+	}
+
+	setRootNode(node: Dependency): void {
+		this.rootNodes.push(node);
+		this._onDidChangeTreeData.fire(undefined);
+	}
+	setChildNode(parent: Dependency, child: Dependency): void {
+		parent.children.push(child);
+		this._onDidChangeTreeData.fire(parent);
+	}
+
+	deleteChildNode(parentNode: Dependency, childNode: Dependency) {
+		console.log("4. deleteChildNode parentNode:", parentNode.label);
+		console.log("4. deleteChildNode childNode:", childNode.label);
+		// Remove the child node from the parent's children array
+		const index = parentNode.children.indexOf(childNode);
+		console.log("5. deleteChildNode index:", index);
+		if (index > -1) {
+			parentNode.children.splice(index, 1);
+		}
+		// Refresh the TreeView to reflect the changes
 		this.refresh();
+		this._onDidChangeTreeData.fire(parentNode);
 	}
-	
-	/**
-	 * Given the path to package.json, read all its dependencies and devDependencies.
-	 */
-	// private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-	// 	const workspaceRoot = this.workspaceRoot;
-	// 	if (this.pathExists(packageJsonPath) && workspaceRoot) {
-	// 		const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
-	// 		const toDep = (moduleName: string, version: string): Dependency => {
-	// 			if (this.pathExists(path.join(workspaceRoot, 'node_modules', moduleName))) {
-	// 				return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.Expanded);
-	// 			} else {
-	// 				return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-	// 					command: 'extension.openPackageOnNpm',
-	// 					title: '',
-	// 					arguments: [moduleName]
-	// 				});
-	// 			}
-	// 		};
+	public handleMessage(queryList: any): void {
+		// Webview에서 전달된 데이터를 처리
+		console.log('3. sqlmapDataExplorer : Received data:' + queryList);
+		this.initNode();
+		let SQLNmSp = Object.keys(queryList)[0];
 
-	// 		const deps = packageJson.dependencies
-	// 			? Object.keys(packageJson.dependencies).map(dep => toDep(dep, packageJson.dependencies[dep]))
-	// 			: [];
-	// 		const devDeps = packageJson.devDependencies
-	// 			? Object.keys(packageJson.devDependencies).map(dep => toDep(dep, packageJson.devDependencies[dep]))
-	// 			: [];
-	// 		return deps.concat(devDeps);
-	// 	} else {
-	// 		return [];
-	// 	}
-	// }
+		// Add a root node to the tree view
+		const rootNode = new Dependency(SQLNmSp, vscode.TreeItemCollapsibleState.Expanded);
+		this.setRootNode(rootNode);
+
+		const values = queryList[SQLNmSp];
+		for (let i = 0; i < values.length; i++) {
+			console.log(values[i]); // Output: "z29m8k7", "z29m8k777777", "z29m8k888888", "z29m8k12345"
+			// Add a child node to the root node
+			const childNode = new Dependency(values[i], vscode.TreeItemCollapsibleState.None);
+			this.setChildNode(rootNode, childNode);
+			childNode.parent = rootNode.parent;
+		}
+
+		this.refresh(rootNode);
+	}
 
 	private pathExists(p: string): boolean {
 		try {
@@ -118,26 +109,24 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 }
 
 export class Dependency extends vscode.TreeItem {
-
+	public parent: Dependency | undefined;
+	children: Dependency[] = [];
 	constructor(
 		public readonly label: string,
 		//private readonly version: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly command?: vscode.Command
+		public readonly command?: vscode.Command,
+		parent?: Dependency,
+		children: Dependency[] = []
+
 	) {
 		super(label, collapsibleState);
+		this.parent = parent;
+		this.children = children;
+		this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
 
-		// this.tooltip = `${this.label}-${this.version}`;
-		// this.description = this.version;
 	}
-	// get tooltip(): string {
-	// return this.label;
-	// }
 
-	// get description(): string {
-	// return '';
-	// }
-	
 	iconPath = {
 		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')

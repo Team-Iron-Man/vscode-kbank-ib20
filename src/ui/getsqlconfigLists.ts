@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // import * as vscode from 'vscode';
+//import { acquireVsCodeApi } from 'vscode';
+
+import {u2csqlmapconfigSelect, U2CSQLMAPCONFIG} from '../modules/db/controllers/sqlconfController';
+
 /*
 //tsconfig.json module에 commonjs 사용하므로, 빌드과정에서 import, export가 에러남... 그래서 그냥 jsonData 하드코딩했다.
 //sqlconfigExplorer.ts에서 jsonData가져와도, 여기로 전달할 방법이 없음.
@@ -109,11 +113,14 @@ const vscode = acquireVsCodeApi();
 
 (function () {
 
+//  SqlMapConfigResult();
   for (let i = 0; i < jsonData.length; i++) {
     const item = jsonData[i];
     sqlcfgIds.add(item.SQL_CONFIG);
     console.log("sqlcfgIds:" + item.SQL_CONFIG);
   }
+  
+
   getConfigtoHTML(sqlcfgIds);
 
   //TO DO : selected된 항목 EventListen -> Namspasce&sql리스트 조회...
@@ -124,9 +131,33 @@ const vscode = acquireVsCodeApi();
     const selectedOption = (event.target as HTMLSelectElement).value;
     console.log(`1. getsqlconfigLists: Select Evt Listen -> POST MESSAGE [` + selectedOption + `]`);
     //window.postMessage(selectedOption);
+
+    //SQL N.S, 쿼리명 조회.
+    //let queryList: Map<string, string> = new Map();
+    let queryList: {[key: string]: string[]} = {};
+    for (let i = 0 ; i < jsonData.length; i++) {
+      const item = jsonData[i];
+      if(selectedOption === item.SQL_CONFIG){
+        if(queryList.hasOwnProperty(item.SQL_NAMESPACE)) {
+          queryList[item.SQL_NAMESPACE].push(item.QUERY_NAME);
+        } else {
+          queryList[item.SQL_NAMESPACE] = [item.QUERY_NAME];
+        }
+      }
+    }
+    // for (let i = 0; i < jsonData.length; i++) {
+    //   const item = jsonData[i];
+    //   if (selectedOption === item.SQL_CONFIG) {
+    //     queryList.set(item.SQL_NAMESPACE, item.QUERY_NAME);
+    //     console.log("SQL NAMESPACE:" + item.SQL_NAMESPACE + " , QUERY_NAME:" + item.QUERY_NAME);
+    //   }
+    // }
+    // const jsonObj = Object.fromEntries(queryList.entries());
+    // const jsonQueryList = JSON.stringify(jsonObj);
+
     // Webview에서 메시지 전달
     //window.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
-    vscode.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
+    vscode.postMessage({ type: 'myEvent', queryList: queryList }, '*');
 
     //window.postMessage(selectedOption);
   });
@@ -152,6 +183,7 @@ window.addEventListener('message', (event: MessageEvent) => {
 });
 
 function getConfigtoHTML(sqlcfgIds: Set<string>) {
+//  function getConfigtoHTML(sqlcfgIds: string[]) {
 
   const dropDown = document.getElementById('sqlconfig-list-dropdown') as HTMLElement;
 
@@ -179,5 +211,18 @@ function getSqlNametoHTML(lst: Map<string,string>){
     dropDown.appendChild(dropItem);
     
   }
+}
+async function SqlMapConfigResult() {
+ let u2cconfigList:U2CSQLMAPCONFIG[];
+ u2cconfigList = await u2csqlmapconfigSelect();
+ console.log(u2cconfigList);
+
+ let item: string[] = u2cconfigList.map((row:any) => {
+    return row.CONFIG_ID;
+  });
+getConfigtoHTML(item);
+
+//  const getSqlMapConfig = 'SELECT CONFIG_ID ,CONFIG_NAME ,DATA_SOURCE ,USE_YN FROM U2C_SQLMAP_CONFIG ORDER BY CONFIG_NAME';
 
 }
+
