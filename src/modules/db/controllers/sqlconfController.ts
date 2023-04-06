@@ -129,9 +129,10 @@ async function u2csqlmapconfigSelect():Promise<U2CSQLMAPCONFIG[]>  {
     const getSqlMapConfig = 'SELECT CONFIG_ID ,CONFIG_NAME ,DATA_SOURCE ,USE_YN FROM U2C_SQLMAP_CONFIG ORDER BY CONFIG_NAME';
     const rows = await dao.query(getSqlMapConfig);
     
-    console.log(rows);
+    console.log("DB STEP 1 : function u2csqlmapconfigSelect");
     
     const u2csqlmapconfig: U2CSQLMAPCONFIG[] = rows.map((row: any) => {
+      console.log("DB STEP 2 : u2csqlmapconfig ::"+row.CONFIG_ID + "::" + row.CONFIG_NAME);
       return {
         
         CONFIG_ID : row.CONFIG_ID,
