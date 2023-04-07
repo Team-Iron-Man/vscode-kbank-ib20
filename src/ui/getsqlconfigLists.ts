@@ -1,16 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // import * as vscode from 'vscode';
-/*
-//tsconfig.json module에 commonjs 사용하므로, 빌드과정에서 import, export가 에러남... 그래서 그냥 jsonData 하드코딩했다.
-//sqlconfigExplorer.ts에서 jsonData가져와도, 여기로 전달할 방법이 없음.
-import * as fs from 'fs';
-import * as path from 'path';
+//import { acquireVsCodeApi } from 'vscode';
 
-const jsonFilePath = path.join(__dirname, 'sampleData.json');//mock Data(추후 DB연결)
-// /Users/ALEMI/workspace/kbank-isb-sql/out/views/explorer/sampleData.json
-//const jsonData = fs.readFileSync(jsonFilePath, 'utf-8');
-const jsonData = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
-*/
+import { u2csqlmapconfigSelect, U2CSQLMAPCONFIG } from '../modules/db/controllers/sqlconfController';
 
 const jsonData = [
   {
@@ -105,18 +97,19 @@ const jsonData = [
 ];
 
 let sqlcfgIds: Set<string> = new Set();
-const vscode = acquireVsCodeApi();
+const vscode = acquireVsCodeApi();//빨간줄 뜨나 로직상 문제될건 없음. 파일 닫고 컴파일.
 
 (function () {
 
-  for (let i = 0; i < jsonData.length; i++) {
-    const item = jsonData[i];
-    sqlcfgIds.add(item.SQL_CONFIG);
-    console.log("sqlcfgIds:" + item.SQL_CONFIG);
-  }
-  getConfigtoHTML(sqlcfgIds);
-
-  //TO DO : selected된 항목 EventListen -> Namspasce&sql리스트 조회...
+  
+  // for (let i = 0; i < jsonData.length; i++) {
+  //   const item = jsonData[i];
+  //   sqlcfgIds.add(item.SQL_CONFIG);
+  //   console.log("sqlcfgIds:" + item.SQL_CONFIG);
+  // }
+  // getConfigtoHTML(sqlcfgIds);
+  
+  SqlMapConfigResult();
 
   //select evt
   const selectElement = document.getElementById('sqlconfig-list-dropdown') as HTMLSelectElement;
@@ -124,13 +117,25 @@ const vscode = acquireVsCodeApi();
     const selectedOption = (event.target as HTMLSelectElement).value;
     console.log(`1. getsqlconfigLists: Select Evt Listen -> POST MESSAGE [` + selectedOption + `]`);
     //window.postMessage(selectedOption);
-    // Webview에서 메시지 전달
-    //window.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
-    vscode.postMessage({ type: 'myEvent', data: { foo: 'bar' } }, '*');
+
+    //SQL N.S, 쿼리명 조회.
+    //let queryList: Map<string, string> = new Map();
+    let queryList: { [key: string]: string[] } = {};
+    for (let i = 0; i < jsonData.length; i++) {
+      const item = jsonData[i];
+      if (selectedOption === item.SQL_CONFIG) {
+        if (queryList.hasOwnProperty(item.SQL_NAMESPACE)) {
+          queryList[item.SQL_NAMESPACE].push(item.QUERY_NAME);
+        } else {
+          queryList[item.SQL_NAMESPACE] = [item.QUERY_NAME];
+        }
+      }
+    }
+
+    vscode.postMessage({ type: 'myEvent', queryList: queryList }, '*');
 
     //window.postMessage(selectedOption);
   });
-  
 
 }());
 
@@ -151,22 +156,39 @@ window.addEventListener('message', (event: MessageEvent) => {
 
 });
 
-function getConfigtoHTML(sqlcfgIds: Set<string>) {
+// function getConfigtoHTML(sqlcfgIds: Set<string>) {
+
+//   const dropDown = document.getElementById('sqlconfig-list-dropdown') as HTMLElement;
+
+//   for (let i of sqlcfgIds) {
+//     const dropItem = document.createElement('option');
+//     const textItem = document.createTextNode(i as string);
+//     dropItem.appendChild(textItem);
+//     dropItem.setAttribute("id", i as string);
+//     dropItem.setAttribute("value", i as string);
+//     dropItem.setAttribute("data-id", i as string);
+//     dropDown.appendChild(dropItem);
+//   }
+
+// }
+function getConfigtoHTML(sqlcfgIds: Map<string, string>) {
 
   const dropDown = document.getElementById('sqlconfig-list-dropdown') as HTMLElement;
+  console.log("DB STEP 6 : getConfigtoHTML() ");
+  for (let [key, value] of sqlcfgIds) {
+    console.log(`${key} = ${value}`);
 
-  for (let i of sqlcfgIds) {
     const dropItem = document.createElement('option');
-    const textItem = document.createTextNode(i as string);
+    const textItem = document.createTextNode(value as string);
     dropItem.appendChild(textItem);
-    dropItem.setAttribute("id", i as string);
-    dropItem.setAttribute("value", i as string);
-    dropItem.setAttribute("data-id", i as string);
+    dropItem.setAttribute("id", value as string);
+    dropItem.setAttribute("value", value as string);
+    dropItem.setAttribute("data-id", value as string);
     dropDown.appendChild(dropItem);
   }
-
 }
-function getSqlNametoHTML(lst: Map<string,string>){
+
+function getSqlNametoHTML(lst: Map<string, string>) {
 
   const dropDown = document.getElementById('sqlnmspace-list') as HTMLElement;
   //sqlnmspace-list
@@ -177,7 +199,24 @@ function getSqlNametoHTML(lst: Map<string,string>){
     dropItem.appendChild(textItem);
     dropItem.setAttribute("value", value as string);
     dropDown.appendChild(dropItem);
-    
+
   }
+}
+async function SqlMapConfigResult() {
+  let u2cconfigList: U2CSQLMAPCONFIG[];
+  console.log("DB STEP 3 : await u2csqlmapconfigSelect()");
+
+  u2cconfigList = await u2csqlmapconfigSelect();
+
+  console.log("DB STEP 4 : u2cconfigList" + u2cconfigList);
+  let item: Map<string, string> = new Map();
+
+  u2cconfigList.map((row: any) => {
+    console.log("DB STEP 5 : DB to MAP::" + row.CONFIG_ID + "::" + row.CONFIG_NAME);
+    item.set(row.CONFIG_ID, row.CONFIG_NAME);
+  });
+  getConfigtoHTML(item);
+
+  //  const getSqlMapConfig = 'SELECT CONFIG_ID ,CONFIG_NAME ,DATA_SOURCE ,USE_YN FROM U2C_SQLMAP_CONFIG ORDER BY CONFIG_NAME';
 
 }

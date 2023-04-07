@@ -5,7 +5,7 @@ import { showQuickPick, showInputBox } from './functions/basicInput';
 import { Note } from "./types/Note";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
-import { SqlmapDataExplorer,Dependency } from './ui/sqlmapDataExplorer';
+import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -17,14 +17,14 @@ export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-kbank-ib20" is now active!');
-	let panel: vscode.WebviewPanel | undefined = undefined;		
+	let panel: vscode.WebviewPanel | undefined = undefined;
 	let notes: Note[] = [];
 	const newNote: Note = {
 		id: "id",
 		title: "Query",
 		content: "",
 		tags: ["Personal"],
-	  };
+	};
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from vscode-kbank-ib20!');
-		const showData:boolean = await showInputBox();
+		const showData: boolean = await showInputBox();
 
 		if (!panel) {
 			panel = vscode.window.createWebviewPanel("noteDetailView", 'matchingNote.title', vscode.ViewColumn.One, {
@@ -40,54 +40,97 @@ export function activate(context: vscode.ExtensionContext) {
 				enableScripts: true,
 				// Restrict the webview to only load resources from the `out` directory
 				localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "out")],
-				});
+			});
 		}
 		panel.title = 'matchingNote.title';
 		panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
-	
+
 		panel.webview.onDidReceiveMessage((message) => {
-		const command = message.command;
-		const note = message.note;
-		switch (command) {
-			case "updateNote":
-			const updatedNoteId = note.id;
-			const copyOfNotesArray = [...notes];
-			const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
-			copyOfNotesArray[matchingNoteIndex] = note;
-			notes = copyOfNotesArray;
-			panel
-				? ((panel.title = note.title),
-				(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
-				: null;
-			break;
-		}
+			const command = message.command;
+			const note = message.note;
+			switch (command) {
+				case "updateNote":
+					const updatedNoteId = note.id;
+					const copyOfNotesArray = [...notes];
+					const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
+					copyOfNotesArray[matchingNoteIndex] = note;
+					notes = copyOfNotesArray;
+					panel
+						? ((panel.title = note.title),
+							(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
+						: null;
+					break;
+			}
 		});
 		panel.onDidDispose(
-		() => {
-			// When the panel is closed, cancel any future updates to the webview content
-			panel = undefined;
-		},
-		null,
-		context.subscriptions
+			() => {
+				// When the panel is closed, cancel any future updates to the webview content
+				panel = undefined;
+			},
+			null,
+			context.subscriptions
 		);
 	});
 
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
 	new SqlconfigExplorer(context, sqlmapProvider); //왼쪽 상단 WebviewView Provider //주입된 프로바이더에 이벤트를 등록한다.
 	sqlmapProvider.sendMessage(`Hello from provider (${new Date().toISOString()})`);//등록된 리스너로 이벤트를 발생시킨다.
-	
-	vscode.window.registerTreeDataProvider('sqlmapExplorer',sqlmapProvider); //viewID:sqlmapExplorer
-	vscode.commands.registerCommand('sqlmapExplorer.addEntry', () => openUntitledFile(context, panel) ); // + 아이콘 클릭
-	vscode.commands.registerCommand('sqlmapExplorer.delEntry', () => vscode.window.showInformationMessage(`Successfully called delete NameSpace.`));	// - 아이콘 클릭
-	
-	context.subscriptions.push(vscode.commands.registerCommand('sqlmapExplorer.refreshEntry', () => {sqlmapProvider.refresh();}));	//refresh
+
+	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
+
+
+	//Context Menu 정의 (마우스 우클릭) [START]
+
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddSelQry',
+		item => command_0(item)); //TEST
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddUpdQry',
+		item => command_0(item)); //TEST
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddInsQry',
+		item => command_0(item)); //TEST
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddDelQry',
+		item => command_0(item)); //TEST
+
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenuaddEntry',
+		item => command_0(item)); //TEST
+
+	vscode.commands.registerCommand('sqlmapExplorer.contextMenudelEntry',
+		(item: Dependency) => {
+			console.log("1. item 삭제:", item.label);
+			sqlmapProvider.getParent(item).then(parentNode => {
+				if (parentNode) {
+					console.log("3. parentNode:", parentNode.label);
+					sqlmapProvider.deleteChildNode(parentNode, item);
+				}
+			});
+		});
+	//Context Menu 정의 (마우스 우클릭) [END]
+
+	//TreeView CodiCon 정의 [START]
+	//TO DO 돋보기? 검색?
+	//Codicon [+] 클릭. To Do NameSpace추가 팝업 띄우기
+	vscode.commands.registerCommand('sqlmapExplorer.addEntry',
+		() => openUntitledFile(context, panel));
+	//TO DO. Codicon [-] 클릭. NameSpace 삭제 팝업 띄우기.
+	vscode.commands.registerCommand('sqlmapExplorer.delEntry',
+		(item: Dependency) => {
+			console.log("1. item 삭제:", item.label);
+			sqlmapProvider.getParent(item).then(parentNode => {
+				if (parentNode) {
+					console.log("3. parentNode:", parentNode.label);
+					sqlmapProvider.deleteChildNode(parentNode, item);
+				}
+			});
+		});
+	context.subscriptions.push(vscode.commands.registerCommand('sqlmapExplorer.refreshEntry',
+		() => { sqlmapProvider.refresh(); }));	//refresh
+	//TreeView CodiCon 정의 [END]
 
 	context.subscriptions.push(disposable);
 }
 
 
-function sqlPanle(panel: vscode.WebviewPanel, context: vscode.ExtensionContext){
-	
+function sqlPanle(panel: vscode.WebviewPanel, context: vscode.ExtensionContext) {
+
 
 }
 async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.WebviewPanel | undefined = undefined) {	// + 아이콘 클릭 시, 화면 중앙 webview panel open 한다.
@@ -104,8 +147,8 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 		title: "Query",
 		content: "",
 		tags: ["Personal"],
-	  };
-	  
+	};
+
 	if (!panel) {
 		panel = vscode.window.createWebviewPanel("noteDetailView", 'matchingNote.title', vscode.ViewColumn.One, {
 			// Enable JavaScript in the webview
@@ -113,29 +156,40 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 			retainContextWhenHidden: true,
 			// Restrict the webview to only load resources from the `out` directory
 			localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "out")],
-			});
+		});
 	}
 	panel.title = 'matchingNote.title';
 	panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
 
 	panel.webview.onDidReceiveMessage((message) => {
-	const command = message.command;
-	const note = message.note;
-	switch (command) {
-		case "updateNote":
-		const updatedNoteId = note.id;
-		const copyOfNotesArray = [...notes];
-		const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
-		copyOfNotesArray[matchingNoteIndex] = note;
-		notes = copyOfNotesArray;
-		panel
-			? ((panel.title = note.title),
-			(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
-			: null;
-		break;
-	}
+		const command = message.command;
+		const note = message.note;
+		switch (command) {
+			case "updateNote":
+				const updatedNoteId = note.id;
+				const copyOfNotesArray = [...notes];
+				const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
+				copyOfNotesArray[matchingNoteIndex] = note;
+				notes = copyOfNotesArray;
+				panel
+					? ((panel.title = note.title),
+						(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
+					: null;
+				break;
+		}
 	});
-  }
-
+}
+function command_0(item: Dependency) {
+	console.log("context menu command 0 clickd with: ", item.label);
+}
+function command_1(item: Dependency, sqlmapProvider: SqlmapDataExplorer) {
+	sqlmapProvider.getParent(item).then(parentNode => {
+		if (parentNode) {
+			// Delete the child node from the parent node
+			sqlmapProvider.deleteChildNode(parentNode, item);
+			console.log("context menu command 1 clicked with: ", item.label);
+		}
+	});
+}
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

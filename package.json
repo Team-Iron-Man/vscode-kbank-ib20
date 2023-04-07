@@ -47,6 +47,30 @@
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
+      },
+      {
+        "command": "sqlmapExplorer.contextMenuAddSelQry",
+        "title": "Add Select Query"
+      },
+      {
+        "command": "sqlmapExplorer.contextMenuAddUpdQry",
+        "title": "Add Update Query"
+      },
+      {
+        "command": "sqlmapExplorer.contextMenuAddInsQry",
+        "title": "Add Insert Query"
+      },
+      {
+        "command": "sqlmapExplorer.contextMenuAddDelQry",
+        "title": "Add Delete Query"
+      },
+      {
+        "command": "sqlmapExplorer.contextMenuaddEntry",
+        "title": "Add Namespace"
+      },
+      {
+        "command": "sqlmapExplorer.contextMenudelEntry",
+        "title": "Delete Query Or Namespace"
       }
     ],
     "viewsContainers": {
@@ -86,6 +110,38 @@
         },
         {
           "command": "sqlmapExplorer.refreshEntry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sqlmapExplorer.contextMenuAddSelQry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.contextMenuAddUpdQry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.contextMenuAddInsQry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.contextMenuAddDelQry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.contextMenuaddEntry",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.contextMenudelEntry",
           "when": "view == sqlmapExplorer",
           "group": "navigation"
         }
@@ -137,6 +193,7 @@
     "mysql2": "^3.1.2",
     "nodejs-base64": "^2.0.0",
     "oracledb": "^5.5.0",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "ts-node": "^10.9.1"
   }
 }
