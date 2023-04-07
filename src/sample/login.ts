@@ -1,5 +1,5 @@
 const mysqlConfig = require('./mysqlConfig');
-import MySQL from '../controllers/mysqlController';
+import MySQL from '../../../sample/mysqlConnection';
 
 async function getEmployees() {
   const db = new MySQL(mysqlConfig);

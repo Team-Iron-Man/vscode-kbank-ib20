@@ -1,5 +1,5 @@
 import * as mysql from "mysql2/promise";
-const config = require('../connection/config/mysqlConfig');
+const config = require('../config/mysqlConfig');
 
 interface IDbConfig {
     host: string;

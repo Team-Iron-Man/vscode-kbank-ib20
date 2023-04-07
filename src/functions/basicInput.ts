@@ -4,8 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { window } from 'vscode';
+// import {login} from '../modules/db/controller/LoginController';
+import {LoginService} from '../modules/db/service/LoginService';
+import {User} from '../types/User';
+
+
 const crypto = require("crypto"); //Bcrypt
-import {login} from '../modules/db/controllers/loginController';
+
 /**
  * Shows a pick list using window.showQuickPick().
  */
@@ -45,18 +50,19 @@ async function showIDInputBox(sd: boolean):Promise<boolean>{
 			
 			window.showInformationMessage(`Dhanged value: ${input.value}`);
 			
-			let pw:string = await login(input.value);
+	
+			let user:User = await LoginService.login(input.value);
 			
-			if(pw === ''){
+			if(user.PASSWORD === ''){
 				input.prompt = '계정이 존재하지 않습니다.';
 			}else{
 				input.dispose();
-				showData = await showPWInputBox(pw);
+				showData = await showPWInputBox(user.PASSWORD);
 				if(!showData){
 					input.show();
 				}
 			}
-			window.showInformationMessage(`Got: ${pw}`);
+			window.showInformationMessage(`Got: ${user.PASSWORD}`);
 			//input.hide();
 		});
 		input.show();

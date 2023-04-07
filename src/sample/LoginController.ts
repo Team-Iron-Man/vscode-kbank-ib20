@@ -1,6 +1,6 @@
-import Dao from '../daos/dao';
-
-interface U2AUSER {
+import Dao from '../dao/dao';
+// import {U2AUSER} from '../../../types/User';
+export interface U2AUSER {
   user_id : string
   name : string
   user_group_id : string
@@ -112,7 +112,9 @@ interface U2C_SQLMAP_QUERY_HISTORY{
 
 async function login(id:string):Promise<string> {
   const dao = new Dao();
+  
   const rows = await dao.query('SELECT * FROM U2A_USER WHERE USER_ID = ?', [id]);
+
   console.log('rows',rows);
   const u2auser: U2AUSER[] = rows.map((row: any) => {
     return {
@@ -124,11 +126,4 @@ async function login(id:string):Promise<string> {
   return u2auser[0].password;
 }
 
-async function u2csqlmapconfigSelect() {
-    const dao = new Dao();
-    const rows = await dao.query('SELECT * FROM U2C_SQLMAP_CONFIG');
-    console.log(rows);
-    await dao.close();
-}
-
-export {login, u2csqlmapconfigSelect};
+export {login};
