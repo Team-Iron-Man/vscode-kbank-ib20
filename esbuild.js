@@ -28,6 +28,7 @@ const extensionConfig = {
 /** @type BuildOptions */
 const webviewConfig = {
   ...baseConfig,
+  platform: "node",
   target: "es2020",
   format: "esm",
   entryPoints: ["./src/webview/main.ts"],
@@ -47,6 +48,7 @@ const webviewConfig = {
 
 const sqlConfigList = {
   ...baseConfig,
+  platform: "node",
   target: "es2020",
   format: "esm",
   entryPoints: ["./src/ui/getsqlconfigLists.ts"],

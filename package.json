@@ -194,7 +194,6 @@
     "nodejs-base64": "^2.0.0",
     "oracledb": "^5.5.0",
     "rimraf": "^2.6.2",
-    "safer-buffer": "^2.1.2",
     "ts-node": "^10.9.1"
   }
 }
