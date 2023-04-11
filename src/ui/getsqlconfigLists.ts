@@ -2,7 +2,8 @@
 // import * as vscode from 'vscode';
 //import { acquireVsCodeApi } from 'vscode';
 
-import { u2csqlmapconfigSelect, U2CSQLMAPCONFIG } from '../modules/db/controllers/sqlconfController';
+import { SqlConfigService } from "../modules/db/service/SqlConfigService";
+import { U2CSQLMAPCONFIG } from "../types/SqlConfig";
 
 const jsonData = [
   {
@@ -109,8 +110,9 @@ const vscode = acquireVsCodeApi();//빨간줄 뜨나 로직상 문제될건 없�
   // }
   // getConfigtoHTML(sqlcfgIds);
   
+  console.log("SqlMapConfigResult() 호출을 시작합니다.");
   SqlMapConfigResult();
-
+  console.log("SqlMapConfigResult() 호출 종료 !");
   //select evt
   const selectElement = document.getElementById('sqlconfig-list-dropdown') as HTMLSelectElement;
   selectElement.addEventListener('change', (event: Event) => {
@@ -152,7 +154,7 @@ window.addEventListener('message', (event: MessageEvent) => {
       console.log("SQL NAMESPACE:" + item.SQL_NAMESPACE + " , QUERY_NAME:" + item.QUERY_NAME);
     }
   }
-  getSqlNametoHTML(queryList);
+  //getSqlNametoHTML(queryList);
 
 });
 
@@ -203,12 +205,13 @@ function getSqlNametoHTML(lst: Map<string, string>) {
   }
 }
 async function SqlMapConfigResult() {
+
   let u2cconfigList: U2CSQLMAPCONFIG[];
-  console.log("DB STEP 3 : await u2csqlmapconfigSelect()");
-
-  u2cconfigList = await u2csqlmapconfigSelect();
-
-  console.log("DB STEP 4 : u2cconfigList" + u2cconfigList);
+  
+  console.log("DB STEP 1 : await u2csqlmapconfigSelect()");
+  u2cconfigList = await SqlConfigService.selectSqlConfig();
+  console.log("DB STEP 4 : u2cconfigList" + u2cconfigList);  
+  
   let item: Map<string, string> = new Map();
 
   u2cconfigList.map((row: any) => {
@@ -217,6 +220,6 @@ async function SqlMapConfigResult() {
   });
   getConfigtoHTML(item);
 
-  //  const getSqlMapConfig = 'SELECT CONFIG_ID ,CONFIG_NAME ,DATA_SOURCE ,USE_YN FROM U2C_SQLMAP_CONFIG ORDER BY CONFIG_NAME';
+  //const getSqlMapConfig = 'SELECT CONFIG_ID ,CONFIG_NAME ,DATA_SOURCE ,USE_YN FROM U2C_SQLMAP_CONFIG ORDER BY CONFIG_NAME';
 
 }
