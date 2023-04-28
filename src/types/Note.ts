@@ -2,8 +2,8 @@
  * Custom type declaration representing a Notepad note.
  */
 export type Note = {
-  id: string;
-  title: string;
-  content?: string;
-  tags?: string[];
+  queryid: "id",
+		type: "Query",
+		use: "",
+		tags: ["queryEdit"],
 };

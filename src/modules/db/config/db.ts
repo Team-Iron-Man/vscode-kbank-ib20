@@ -1,7 +1,4 @@
-import * as mysql from "mysql2/promise";
-const config = require('./mysqlConfig');
-
-const pool = mysql.createPool(config);
+import pool from './mysqlConfig';
 
 export async function executeQuery<T>(query: string, values?: any): Promise<T> {
   const connection = await pool.getConnection();
@@ -19,13 +16,15 @@ export async function executeQuery<T>(query: string, values?: any): Promise<T> {
 }
 
 export async function query(sql: string, values?: any): Promise<any> {
-    const connection = await pool.getConnection();
-    try {
+  const connection = await pool.getConnection();
+  try {
         const [rows] = await connection.query(sql, values);
         return rows;
       } catch (e) {
+        console.error('e',e);
       } finally {
-        connection.release();
+        console.error('e',"release");
+        if (connection){connection.release();} // 연결 풀에 연결 반환
+        pool.end();
       }
-  }
-
+}

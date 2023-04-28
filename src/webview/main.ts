@@ -43,6 +43,7 @@ window.addEventListener("load", main);
 let editor;
 
 function main() {
+  console.log("main");
   // Monaco Editor 생성
   // const overrides = {
   //   '.monaco-editor': {
@@ -55,7 +56,7 @@ function main() {
   //   language: 'sql'
   //   },overrides,
   // );  
-
+  
   setVSCodeMessageListener();
 
   vscode.postMessage({ command: "requestNoteData" });
@@ -64,12 +65,11 @@ function main() {
   // a given toolkit component can be imported and used to type cast a reference
   // to the element (i.e. the `as Button` syntax)
  
-  // const saveButton = document.getElementById("submit-button") as Button;
-  // saveButton.addEventListener("click", () => saveNote());
-
+  const saveButton = document.getElementById("submit-button") as Button;
+  saveButton.addEventListener("click", () => saveNote());
+ 
   const sqlButton3 = document.getElementById("submit-button3") as Button;
-  sqlButton3.addEventListener("click", () => refresh());
-
+  sqlButton3.addEventListener("click", () => search());
   
 }
 
@@ -99,6 +99,10 @@ function setVSCodeMessageListener() {
         break;
     }
   });
+}
+
+function search(){
+  console.log('test',test);
 }
 
 function refresh() {

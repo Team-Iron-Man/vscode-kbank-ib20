@@ -13,6 +13,9 @@
     "onCommand:vscode-kbank-ib20.helloWorld",
     "onNotebook:my-notebook"
   ],
+  "extensionKind": [
+    "window"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [

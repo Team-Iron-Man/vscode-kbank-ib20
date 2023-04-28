@@ -6,6 +6,8 @@ import { Note } from "./types/Note";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
+import {SqlConfigService} from './modules/db/service/SqlConfigService';
+
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "vscode-kbank-ib20" is now active!');
 	let panel: vscode.WebviewPanel | undefined = undefined;
 	let notes: Note[] = [];
-	const newNote: Note = {
+	const queryEdit: Note = {
 		id: "id",
 		title: "Query",
 		content: "",
@@ -43,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		}
 		panel.title = 'matchingNote.title';
-		panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
+		panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, queryEdit);
 
 		panel.webview.onDidReceiveMessage((message) => {
 			const command = message.command;
@@ -141,12 +143,12 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 	// }); 
 	// vscode.window.showTextDocument(document);
 
-	let notes: Note[] = [];
-	const newNote: Note = {
-		id: "id",
-		title: "Query",
-		content: "",
-		tags: ["Personal"],
+	let notes: Note[] = [];//패널을 열때 SQL에 대한 정보를 인터페이스에 정의하고 넘겨준다. 정보를 넘겨준다. 
+	const queryEdit: Note = {
+		queryid: "id",
+		type: "Query",
+		use: "",
+		tags: ["queryEdit"],
 	};
 
 	if (!panel) {
@@ -159,7 +161,7 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 		});
 	}
 	panel.title = 'matchingNote.title';
-	panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
+	panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, queryEdit);
 
 	panel.webview.onDidReceiveMessage((message) => {
 		const command = message.command;

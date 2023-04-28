@@ -1,12 +1,48 @@
-import { Webview, Uri } from "vscode";
+import * as vscode from 'vscode';
+
+import { Webview, Uri, WebviewPanel, window,ViewColumn, Disposable } from "vscode";
 import { Note } from "../types/Note";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 
 
 
+export class SqlQueryEdit{
+  constructor(context: vscode.ExtensionContext, note: Note){
+    new SqlQueryEditProvider(context.extensionUri, note);
 
-/**
+  }
+}
+
+class SqlQueryEditProvider implements vscode.WebviewViewProvider{
+  public static readonly viewType = 'SqlQueryEdit';
+  public static currentWvVProvider: SqlQueryEditProvider | undefined;
+  private _view: vscode.WebviewView | undefined;
+  private _disposables: vscode.Disposable[] = [];
+  private _sqlQueryEdit?: SqlQueryEdit;
+  private _note: Note; 
+
+  constructor(private readonly _extensionUri: vscode.Uri, note: Note){
+    this._note = note;
+  }
+
+  resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
+    this._view = webviewView;
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [
+        //this._extensionUri
+        vscode.Uri.joinPath(this._extensionUri, 'out')
+      ]
+    };
+
+    this._view.webview.html = this._getHtmlForWebView(webviewView.webview, this._extensionUri, this._note);
+    this._view.webview.onDidReceiveMessage((message) => {
+      console.log(`2, SqlQueryEditProvider : Received selected option: `+message);
+    });
+  }
+ 
+  /**
  * Defines and returns the HTML that should be rendered within a notepad note view (aka webview panel).
  *
  * @param webview A reference to the extension webview
@@ -15,7 +51,7 @@ import { getNonce } from "../utilities/getNonce";
  * @returns A template string literal containing the HTML that should be
  * rendered within the webview panel
  */
-export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Note) {
+private _getHtmlForWebView(webview: Webview, extensionUri: Uri, note: Note) {
   const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
   const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
   const toolkitUri = getUri(webview, extensionUri, [
@@ -62,11 +98,11 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
           width: 100%;
         }
       </style>        
-        <title>${note.title}</title>
+        <title>${note}</title>
     </head>
     <body id="webview-body">
       <header>
-        <h1>${note.title}</h1>
+        <h1>${note}</h1>
         <div id="tags-container"></div>
       </header>
       <section id="notes-form">
@@ -89,7 +125,7 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
           </vscode-dropdown> 
         </div>
 
-        <vscode-text-area id="editor"value="${note.content}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>
+        <vscode-text-area id="editor"value="${note}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>
         <div id="editor" class="monaco-editor-container"></div>
         <vscode-divider role="separator"></vscode-divider>
         
@@ -137,3 +173,6 @@ export function getWebviewContent(webview: Webview, extensionUri: Uri, note: Not
   </html>
 `;
   }
+}
+
+
