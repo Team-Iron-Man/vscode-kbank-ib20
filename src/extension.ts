@@ -6,6 +6,7 @@ import { Note } from "./types/Note";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
+import CatCodingPanel from './ui/EditPanel';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -78,6 +79,30 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
 
+	
+	context.subscriptions.push(		
+		vscode.commands.registerCommand('catCoding.start', () => {		  
+		  CatCodingPanel.createOrShow(context.extensionUri);
+		})
+	  );
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand('catCoding.doRefactor', () => {
+		  if (CatCodingPanel.currentPanel) {
+			CatCodingPanel.currentPanel.doRefactor();
+		  }
+		})
+	  );
+
+	  if (vscode.window.registerWebviewPanelSerializer) {
+		vscode.window.registerWebviewPanelSerializer(CatCodingPanel.viewType, {
+		  async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
+			console.log(`Got state: ${state}`);
+			webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
+			CatCodingPanel.revive(webviewPanel, context.extensionUri);
+		  }
+		});
+	  }
 
 	//Context Menu 정의 (마우스 우클릭) [START]
 
@@ -128,6 +153,12 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
+function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
+	return {
+	  enableScripts: true,
+	  localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
+	};
+  }
 
 function sqlPanle(panel: vscode.WebviewPanel, context: vscode.ExtensionContext) {
 

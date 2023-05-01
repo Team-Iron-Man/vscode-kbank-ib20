@@ -39,7 +39,7 @@ const webviewConfig = {
     copy({
       resolveFrom: "cwd",
       assets: {
-        from: ["./src/webview/*.css","./src/webview/*.js"],
+        from: ["./src/webview/*.css","./src/webview/*.js", "./src/webview/*.ttf"],
         to: ["./out"],
       },
     }),
