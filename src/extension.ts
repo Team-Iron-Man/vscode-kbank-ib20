@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { showQuickPick, showInputBox } from './functions/basicInput';
-import { Note } from "./types/Note";
+import { Note,SqlEdit } from "./types/Note";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
@@ -79,10 +79,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
 
-	
+	const sqledit: SqlEdit = {
+		id: "qryTB_ISB_PRD_MT_SB_C_01",
+		title: "SQL Map",
+		sql: "select * from ",
+		type:"",
+		use:"Y",
+		sqlnamespace:"",
+	};
+
 	context.subscriptions.push(		
 		vscode.commands.registerCommand('catCoding.start', () => {		  
-		  CatCodingPanel.createOrShow(context.extensionUri);
+		  CatCodingPanel.createOrShow(context.extensionUri, sqledit);
 		})
 	  );
 	
@@ -99,7 +107,7 @@ export function activate(context: vscode.ExtensionContext) {
 		  async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
 			console.log(`Got state: ${state}`);
 			webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
-			CatCodingPanel.revive(webviewPanel, context.extensionUri);
+			CatCodingPanel.revive(webviewPanel, context.extensionUri, sqledit);
 		  }
 		});
 	  }

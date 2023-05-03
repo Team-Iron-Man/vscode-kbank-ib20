@@ -13,6 +13,7 @@ import {
   vsCodeDataGridCell,
   vsCodeDataGridRow,
   vsCodeDivider,
+  Dropdown,
 } from "@vscode/webview-ui-toolkit";
 
 // In order to use the Webview UI Toolkit web components they
@@ -66,6 +67,13 @@ function main() {
  
   // const saveButton = document.getElementById("submit-button") as Button;
   // saveButton.addEventListener("click", () => saveNote());
+  const dropdown1 = document.getElementById("type-dropdown") as Dropdown;
+  dropdown1.addEventListener("click", (event) => {
+    console.log(event);
+  });
+
+  const dropdown2 = document.getElementById("use-dropdown") as Dropdown;
+  
 
   const sqlButton3 = document.getElementById("submit-button3") as Button;
   sqlButton3.addEventListener("click", () => refresh());

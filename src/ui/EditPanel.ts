@@ -1,28 +1,25 @@
 import * as vscode from 'vscode';
 import {QueryService} from "../modules/db/service/QueryService";
 import { getUri } from "../utilities/getUri";
+import { SqlEdit } from "../types/SqlEdit";
 
-const cats = {
-  'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-  'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
-  'Testing Cat': 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'
-};
 
 function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
   return {
     enableScripts: true,
-    localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+    localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
   };
 }
 
 class CatCodingPanel {
   public static currentPanel: CatCodingPanel | undefined;
-  public static readonly viewType = 'catCoding';
+  public static readonly viewType = 'sqlEdit';
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
   private _disposables: vscode.Disposable[] = [];
+  private _sqlEdit: SqlEdit;
 
-  public static createOrShow(extensionUri: vscode.Uri) {
+  public static createOrShow(extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
     comman_2();
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
@@ -40,19 +37,22 @@ class CatCodingPanel {
       getWebviewOptions(extensionUri),
     );
 
-    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri);
+    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri, sqlEdit);
 
   }
 
-  public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri);
+  public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
+    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri, sqlEdit);
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
     this._panel = panel;
     this._extensionUri = extensionUri;
+    this._sqlEdit = sqlEdit;
     this._update();
+    //패널을 닫거나 확장 프로그램이 프로그래밍 방식으로 닫아 웹 보기 패널을 삭제할 때 트리거되는 콜백 함수
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    //패널의 가시성 상태가 변경될 때마다 함수가 호출됨
     this._panel.onDidChangeViewState(
       e => {
         if (this._panel.visible) {
@@ -62,6 +62,7 @@ class CatCodingPanel {
       null,
       this._disposables
     );
+    //패널에서 메시지를 수신하면 트리거되는 콜백 함수입니다.
     this._panel.webview.onDidReceiveMessage(
       message => {
         switch (message.command) {
@@ -94,31 +95,33 @@ class CatCodingPanel {
     const webview = this._panel.webview;
     switch (this._panel.viewColumn) {
       case vscode.ViewColumn.Two:
-        this._updateForCat(webview, 'Compiling Cat');
+        this._updateForCat(webview);
         return;
         case vscode.ViewColumn.Three:
-            this._updateForCat(webview, 'Testing Cat');
+            this._updateForCat(webview);
             return;
         
           case vscode.ViewColumn.One:
           default:
-            this._updateForCat(webview, 'Coding Cat');
+            this._updateForCat(webview);
             return;
         }
     }
 
-    private _updateForCat(webview: vscode.Webview, catName: keyof typeof cats) {
-        this._panel.title = catName;
-        this._panel.webview.html = this._getHtmlForWebview(webview, cats[catName]);
+    private _updateForCat(webview: vscode.Webview) {
+        this._panel.title = this._sqlEdit.title;
+        this._panel.webview.html = this._getHtmlForWebview(webview);
     }
     
-    private _getHtmlForWebview(webview: vscode.Webview, catGifPath: string) {
+    private _getHtmlForWebview(webview: vscode.Webview) {
+
         // const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js');
         // const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
         // const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
         // const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
         // const stylesResetUri = webview.asWebviewUri(styleResetPath);
         // const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+        console.log("extensionUri: ",this._extensionUri);
         const webviewUri = getUri(webview, this._extensionUri, ["out", "webview.js"]);
         const styleUri = getUri(webview, this._extensionUri, ["out", "style.css"]);
         const nonce = getNonce();
@@ -143,7 +146,7 @@ class CatCodingPanel {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta http-equiv="Content-Security-Policy" 'unsafe-inline' content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
                 <link rel="stylesheet" href="${styleUri}">
-                <title>Query</title>
+                <title>${this._sqlEdit.title}</title>
             </head>
             <body>
               <header>
@@ -153,25 +156,24 @@ class CatCodingPanel {
               <section id="notes-form">
               <vscode-divider role="separator"></vscode-divider>
               
-              <vscode-text-field id="title" value="" placeholder="Enter a name" type="text">Sql Map Id*</vscode-text-field>
+              <vscode-text-field id="title" value="${this._sqlEdit.id}" placeholder="Enter a name" type="text">Sql Map Id*</vscode-text-field>
               
               <div>
               <label for="type-dropdown">Type:</label>
-              <vscode-dropdown id="type-dropdown" position="below">
-                    <vscode-option>SELECT</vscode-option>
-                    <vscode-option>UPDATE</vscode-option>
-                    <vscode-option>INSERT</vscode-option>
-                    <vscode-option>UPDATE</vscode-option>
-                  </vscode-dropdown>
-                  <label for="use-dropdown">Use:</label>
-                  <vscode-dropdown id="use-dropdown" position="below">
-                  <vscode-option>Y</vscode-option>
-                  <vscode-option>N</vscode-option>
-                  </vscode-dropdown> 
+              <vscode-dropdown id="type-dropdown">
+                <option value="SELECT">SELECT</option>
+                <option value="UPDATE">UPDATE</option>
+                <option value="INSERT" selected>INSERT</option>
+                <option value="UPDATE">UPDATE</option>
+              </vscode-dropdown>
+              <label for="use-dropdown">Use:</label>
+              <vscode-dropdown id="use-dropdown">
+                <vscode-option value="Y">Y</vscode-option>
+                <vscode-option value="N">N</vscode-option>
+              </vscode-dropdown> 
                 </div>
 
-                <vscode-text-area id="editor"value="" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>
-                <div id="editor" class="monaco-editor-container"></div>
+                <vscode-text-area id="editor"value="${this._sqlEdit.sql}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>                
                 <vscode-divider role="separator"></vscode-divider>
                 
                 <label for="info-dropdown">DB Info:</label>

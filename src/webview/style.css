@@ -20,6 +20,19 @@
   grid-column-gap: 0.5rem;
 }
 
+#use-dropdown {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  grid-column-gap: 0.5rem;
+}
+
+#type-dropdown {
+  min-width: 30px;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
 @media screen and (min-width: 1024px) {
   #webview-body {
     padding: 0 8rem;
