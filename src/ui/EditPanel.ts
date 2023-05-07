@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {QueryService} from "../modules/db/service/QueryService";
 import { getUri } from "../utilities/getUri";
 import { SqlEdit } from "../types/SqlEdit";
-
+import { getNonce } from "../utilities/getNonce";
 
 function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
   return {
@@ -66,8 +66,11 @@ class CatCodingPanel {
     this._panel.webview.onDidReceiveMessage(
       message => {
         switch (message.command) {
-          case 'alert':
+          case 'error':
             vscode.window.showErrorMessage(message.text);
+            return;
+          case 'info':
+            vscode.window.showInformationMessage(message.text);
             return;
         }
       },
@@ -109,7 +112,7 @@ class CatCodingPanel {
     }
 
     private _updateForCat(webview: vscode.Webview) {
-        this._panel.title = this._sqlEdit.title;
+        this._panel.title = this._sqlEdit.id;
         this._panel.webview.html = this._getHtmlForWebview(webview);
     }
     
@@ -124,15 +127,17 @@ class CatCodingPanel {
         console.log("extensionUri: ",this._extensionUri);
         const webviewUri = getUri(webview, this._extensionUri, ["out", "webview.js"]);
         const styleUri = getUri(webview, this._extensionUri, ["out", "style.css"]);
+        const codiconUri = getUri(webview, this._extensionUri, ["out", "codicon.css"]);
         const nonce = getNonce();
         
         webview.onDidReceiveMessage((message) => {
+            vscode.window.showInformationMessage(`Received message: ${message}`);
             const command = message.command;
             switch (command) {
             case "requestNoteData":
                 webview.postMessage({
                 command: "receiveDataInWebview",
-                // payload: JSON.stringify(note),
+                payload: JSON.stringify(this._sqlEdit),
                 });
                 break;
             }
@@ -144,91 +149,75 @@ class CatCodingPanel {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="Content-Security-Policy" 'unsafe-inline' content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
                 <link rel="stylesheet" href="${styleUri}">
-                <title>${this._sqlEdit.title}</title>
+                <link rel="stylesheet" href="${codiconUri}">
+                <title>${this._sqlEdit.id}</title>
             </head>
             <body>
               <header>
-                <h1>Query</h1>
-                <div id="tags-container"></div>
+
               </header>
               <section id="notes-form">
               <vscode-divider role="separator"></vscode-divider>
-              
-              <vscode-text-field id="title" value="${this._sqlEdit.id}" placeholder="Enter a name" type="text">Sql Map Id*</vscode-text-field>
-              
-              <div>
-              <label for="type-dropdown">Type:</label>
-              <vscode-dropdown id="type-dropdown">
-                <option value="SELECT">SELECT</option>
-                <option value="UPDATE">UPDATE</option>
-                <option value="INSERT" selected>INSERT</option>
-                <option value="UPDATE">UPDATE</option>
-              </vscode-dropdown>
-              <label for="use-dropdown">Use:</label>
-              <vscode-dropdown id="use-dropdown">
-                <vscode-option value="Y">Y</vscode-option>
-                <vscode-option value="N">N</vscode-option>
-              </vscode-dropdown> 
+                            
+              <div class="container">
+                <label for="type-dropdown">ID*</label>    
+                <vscode-text-field id="title" value="${this._sqlEdit.id}" type="text" size="30"></vscode-text-field>                                              
+                <label for="type-dropdown">TYPE*</label>
+                <vscode-dropdown id="type-dropdown">
+                  <vscode-option value="SELECT">SELECT</vscode-option>
+                  <vscode-option value="UPDATE" selected>UPDATE</vscode-option>
+                  <vscode-option value="INSERT">INSERT</vscode-option>
+                  <vscode-option value="DELETE">DELETE</vscode-option>
+                </vscode-dropdown>
+                <label slot="label">USE*</label>
+                <vscode-radio-group>
+                  <vscode-radio value="Y" checked>Y</vscode-radio>
+                  <vscode-radio value="N">N</vscode-radio>
+                </vscode-radio-group>                                
+              </div>
+
+                <vscode-text-area id="editor" value="${this._sqlEdit.sql}" placeholder="sql" resize="vertical" rows=10>Query</vscode-text-area>                
+
+                <vscode-divider role="presentation"></vscode-divider>
+                
+                <div class="container">
+                  <label for="info-dropdown">DB Info*</label>
+                  <vscode-dropdown id="info-dropdown">
+                    <vscode-option>isb_frw</vscode-option>
+                    <vscode-option>cbz_frw</vscode-option>                  
+                  </vscode-dropdown>
+
+                  <vscode-button id="submit-button1" appearance="Secondary">Set Param
+                    <span slot="start" class="codicon codicon-add"></span>
+                  </vscode-button>
+
+                  <vscode-button id="submit-button2" appearance="Secondary">Query Test
+                    <span slot="start" class="codicon codicon-beaker"></span>                                    
+                  </vscode-button>
+                  <vscode-button id="submit-button3" appearance="Primary">Query Save
+                    <span slot="start" class="codicon codicon-save"></span>                  
+                  </vscode-button>                  
                 </div>
 
-                <vscode-text-area id="editor"value="${this._sqlEdit.sql}" placeholder="Write your heart out, Shakespeare!" resize="vertical" rows=15></vscode-text-area>                
-                <vscode-divider role="separator"></vscode-divider>
-                
-                <label for="info-dropdown">DB Info:</label>
-                <vscode-dropdown id="info-dropdown" position="below">
-                  <vscode-option>isb_frw</vscode-option>
-                  <vscode-option>cbz_frw</vscode-option>
-                  <vscode-option>되고 있는거지</vscode-option>
-                </vscode-dropdown>
-                
-                <vscode-data-grid id="basic-grid" aria-label="Basic">
-                  <vscode-data-grid-row row-type="header">
-                    <vscode-data-grid-cell cell-type="columnheader" grid-column="1">Parameter</vscode-data-grid-cell>
-                    <vscode-data-grid-cell cell-type="columnheader" grid-column="2">Value</vscode-data-grid-cell>
-                    <vscode-data-grid-cell cell-type="columnheader" grid-column="3">Data Type</vscode-data-grid-cell>
-                  </vscode-data-grid-row>
-                  <vscode-data-grid-row>
-                    <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
-                  </vscode-data-grid-row>
-                  <vscode-data-grid-row>
-                    <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
-                  </vscode-data-grid-row>
-                  <vscode-data-grid-row>
-                    <vscode-data-grid-cell grid-column="1">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="2">Cell Data</vscode-data-grid-cell>
-                    <vscode-data-grid-cell grid-column="3">Cell Data</vscode-data-grid-cell>
-                  </vscode-data-grid-row>
-                </vscode-data-grid>
-                <div>
-                  <vscode-button id="submit-button1">Set Param</vscode-button>
-                  <vscode-button id="submit-button2">Query Test</vscode-button>
+                <div id="paramContainer">
+                  <div>
+                    <vscode-text-field type="text" readonly>Parameter</vscode-text-field>
+                    <vscode-text-field type="text">Value</vscode-text-field>
+                    <vscode-text-field type="text">Data Type</vscode-text-field>
+                  </div>
                 </div>
+
                 <vscode-divider role="separator"></vscode-divider>
                 <vscode-text-area id="description"value="" placeholder="" resize="vertical" rows=5>Description</vscode-text-area>
-                <div>
-                  <vscode-button id="submit-button3">Query Save</vscode-button>
-                </div>
+
               </section>
               <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
             </body>
           </html>
         `;
     }
-}
-
-function getNonce() {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
 }
 
 async function comman_2(){

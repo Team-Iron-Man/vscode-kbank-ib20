@@ -12,6 +12,16 @@ import CatCodingPanel from './ui/EditPanel';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+	const sqledit: SqlEdit = {
+		id: "qryTB_ISB_PRD_MT_SB_C_01",
+		title: "SQL Map",
+		sql: "select * from ",
+		type:"",
+		use:"Y",
+		sqlnamespace:"",
+		tags: ["KBANK","IB20"],
+	};
+	
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
@@ -19,13 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-kbank-ib20" is now active!');
 	let panel: vscode.WebviewPanel | undefined = undefined;
-	let notes: Note[] = [];
-	const newNote: Note = {
-		id: "id",
-		title: "Query",
-		content: "",
-		tags: ["Personal"],
-	};
+	
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -34,43 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from vscode-kbank-ib20!');
 		const showData: boolean = await showInputBox();
-
-		if (!panel) {
-			panel = vscode.window.createWebviewPanel("noteDetailView", 'matchingNote.title', vscode.ViewColumn.One, {
-				// Enable JavaScript in the webview
-				enableScripts: true,
-				// Restrict the webview to only load resources from the `out` directory
-				localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "out")],
-			});
-		}
-		panel.title = 'matchingNote.title';
-		panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, newNote);
-
-		panel.webview.onDidReceiveMessage((message) => {
-			const command = message.command;
-			const note = message.note;
-			switch (command) {
-				case "updateNote":
-					const updatedNoteId = note.id;
-					const copyOfNotesArray = [...notes];
-					const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
-					copyOfNotesArray[matchingNoteIndex] = note;
-					notes = copyOfNotesArray;
-					panel
-						? ((panel.title = note.title),
-							(panel.webview.html = getWebviewContent(panel.webview, context.extensionUri, note)))
-						: null;
-					break;
-			}
-		});
-		panel.onDidDispose(
-			() => {
-				// When the panel is closed, cancel any future updates to the webview content
-				panel = undefined;
-			},
-			null,
-			context.subscriptions
-		);
+		CatCodingPanel.createOrShow(context.extensionUri, sqledit);
 	});
 
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
@@ -79,14 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
 
-	const sqledit: SqlEdit = {
-		id: "qryTB_ISB_PRD_MT_SB_C_01",
-		title: "SQL Map",
-		sql: "select * from ",
-		type:"",
-		use:"Y",
-		sqlnamespace:"",
-	};
+
 
 	context.subscriptions.push(		
 		vscode.commands.registerCommand('catCoding.start', () => {		  

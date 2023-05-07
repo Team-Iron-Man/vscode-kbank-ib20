@@ -1,4 +1,5 @@
 import {
+  allComponents,
   provideVSCodeDesignSystem,
   Button,
   Tag,
@@ -9,11 +10,13 @@ import {
   vsCodeTextArea,
   vsCodeTextField,
   vsCodeDropdown,
+  vsCodeOption,
   vsCodeDataGrid,
   vsCodeDataGridCell,
   vsCodeDataGridRow,
   vsCodeDivider,
-  Dropdown,
+  vsCodeRadioGroup,
+  vsCodeRadio,
 } from "@vscode/webview-ui-toolkit";
 
 // In order to use the Webview UI Toolkit web components they
@@ -21,15 +24,7 @@ import {
 // syntax below.
 
 provideVSCodeDesignSystem().register(
-  vsCodeButton(),
-  vsCodeTag(),
-  vsCodeTextArea(),
-  vsCodeTextField(),
-  vsCodeDropdown(),
-  vsCodeDataGrid(),
-  vsCodeDataGridCell(),
-  vsCodeDataGridRow(),
-  vsCodeDivider(),
+  allComponents
 );
 
 // Get access to the VS Code API from within the webview context
@@ -67,39 +62,38 @@ function main() {
  
   // const saveButton = document.getElementById("submit-button") as Button;
   // saveButton.addEventListener("click", () => saveNote());
-  const dropdown1 = document.getElementById("type-dropdown") as Dropdown;
-  dropdown1.addEventListener("click", (event) => {
-    console.log(event);
-  });
+  // const dropdown1 = document.getElementById("type-dropdown") as Dropdown;
+  // dropdown1.addEventListener("click", (event) => {
+  //   console.log(event);
+  // });
 
-  const dropdown2 = document.getElementById("use-dropdown") as Dropdown;
+  // const dropdown2 = document.getElementById("use-dropdown") as Dropdown;
   
 
+  const sqlButton1 = document.getElementById("submit-button1") as Button;
+  sqlButton1.addEventListener("click", () => refresh());
+
+  const sqlButton2 = document.getElementById("submit-button2") as Button;
+  sqlButton2.addEventListener("click", () => queryTest());
+
   const sqlButton3 = document.getElementById("submit-button3") as Button;
-  sqlButton3.addEventListener("click", () => refresh());
+  sqlButton3.addEventListener("click", () => querySave());
 
   
 }
 
 // 초기 설정된 테마를 가져와서 적용합니다.
-const currentTheme = vscode.getState().theme || 'light';
-setTheme(currentTheme);
+// const currentTheme = vscode.getState().theme || 'light';
+// setTheme(currentTheme);
 
 // Stores the currently opened note info so we know the ID when we update it on save
 let openedNote;
 
 function setVSCodeMessageListener() {
-  window.addEventListener("message", (event) => {
+  window.addEventListener("message", (event) => {    
     const command = event.data.command;
     const noteData = JSON.parse(event.data.payload);
-
-    const message = event.data;
-    if (message.type === 'theme') {
-      const theme = message.theme;
-      setTheme(theme);
-    }
-
-
+    vscode.postMessage({command: 'info',text: '🐛  on line '});
     switch (command) {
       case "receiveDataInWebview":
         openedNote = noteData;
@@ -109,14 +103,51 @@ function setVSCodeMessageListener() {
   });
 }
 
+function queryTest() {
+}
+
+function querySave() {
+}
+
 function refresh() {
-  const noteInput = document.getElementById("container") as TextArea;
+  const noteInput = document.getElementById("editor") as TextArea;
   console.log("noteInput");
   const formatted = format(noteInput.value);
   noteInput.value = formatted;
   console.log(formatted);
-  console.log(editor.getValue());
+  
+  let inputCounter = 0;
+  const container = document.getElementById("paramContainer");
+  clearBox(container);
+  const row = document.createElement('div');
+  //row.className = 'row';
+  for (let i = 0; i < 3; i++) {
+    const inputBox = document.createElement("vscode-text-field") as TextField;
+    inputBox.setAttribute('type', 'text');
+    inputBox.setAttribute('id', 'input-' + inputCounter);
+    inputBox.setAttribute('placeholder', 'Input ' + inputCounter);    
+    inputBox.setAttribute('readonly', '');    
+    addInputBox(inputBox, row);
+    inputCounter++;
+  }  
+  markBox(row,container);    
+  // console.log(editor.getValue());
 }
+
+function markBox(row, tagsContainer){
+  tagsContainer.appendChild(row);
+}
+
+function addInputBox(inputElement, parent) {
+    parent.appendChild(inputElement);
+}
+
+function clearBox(tagsContainer) {
+  while (tagsContainer.firstChild) {
+    tagsContainer.removeChild(tagsContainer.lastChild);
+  }
+}
+
 
 function saveNote() {
   const titleInput = document.getElementById("title") as TextField;
@@ -181,19 +212,19 @@ function getState() {
 
 // HTML 엘리먼트에 테마를 적용합니다.
 function setTheme(theme) {
-  const body = document.body;
-  const newThemeClass = `vscode-theme-${theme}`;
-  const oldThemeClass = body.getAttribute('data-vscode-theme');
-  body.setAttribute('data-vscode-theme', newThemeClass);
-  body.classList.remove(oldThemeClass);
-  body.classList.add(newThemeClass);
+  // const body = document.body;
+  // const newThemeClass = `vscode-theme-${theme}`;
+  // const oldThemeClass = body.getAttribute('data-vscode-theme');
+  // body.setAttribute('data-vscode-theme', newThemeClass);
+  // body.classList.remove(oldThemeClass);
+  // body.classList.add(newThemeClass);
 }
 
 // 현재 설정된 테마를 가져와서 WebView에 메시지를 보냅니다.
-function updateTheme() {
-  const currentTheme = vscode.getState().theme || 'light';
-  vscode.postMessage({
-    type: 'theme',
-    theme: currentTheme
-  });
-}
+// function updateTheme() {
+//   const currentTheme = vscode.getState().theme || 'light';
+//   vscode.postMessage({
+//     type: 'theme',
+//     theme: currentTheme
+//   });
+// }

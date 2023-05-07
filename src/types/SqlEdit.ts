@@ -8,5 +8,6 @@ export type SqlEdit = {
     use: string;
     sql: string;
     sqlnamespace: string;
+    tags?: string[];
   };
   
