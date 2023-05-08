@@ -11,8 +11,8 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
   };
 }
 
-class CatCodingPanel {
-  public static currentPanel: CatCodingPanel | undefined;
+class SqlEditPanel {
+  public static currentPanel: SqlEditPanel | undefined;
   public static readonly viewType = 'sqlEdit';
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -25,24 +25,24 @@ class CatCodingPanel {
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
 
-    if (CatCodingPanel.currentPanel) {
-      CatCodingPanel.currentPanel._panel.reveal(column);
+    if (SqlEditPanel.currentPanel) {
+      SqlEditPanel.currentPanel._panel.reveal(column);
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
-      CatCodingPanel.viewType,
+      SqlEditPanel.viewType,
       'Cat Coding',
       column || vscode.ViewColumn.One,
       getWebviewOptions(extensionUri),
     );
 
-    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri, sqlEdit);
+    SqlEditPanel.currentPanel = new SqlEditPanel(panel, extensionUri, sqlEdit);
 
   }
 
   public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
-    CatCodingPanel.currentPanel = new CatCodingPanel(panel, extensionUri, sqlEdit);
+    SqlEditPanel.currentPanel = new SqlEditPanel(panel, extensionUri, sqlEdit);
   }
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
@@ -84,7 +84,7 @@ class CatCodingPanel {
   }
 
   public dispose() {
-    CatCodingPanel.currentPanel = undefined;
+    SqlEditPanel.currentPanel = undefined;
     this._panel.dispose();
     while (this._disposables.length) {
       const x = this._disposables.pop();
@@ -125,7 +125,7 @@ class CatCodingPanel {
         // const stylesResetUri = webview.asWebviewUri(styleResetPath);
         // const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
         console.log("extensionUri: ",this._extensionUri);
-        const webviewUri = getUri(webview, this._extensionUri, ["out", "webview.js"]);
+        const webviewUri = getUri(webview, this._extensionUri, ["out", "main.js"]);
         const styleUri = getUri(webview, this._extensionUri, ["out", "style.css"]);
         const codiconUri = getUri(webview, this._extensionUri, ["out", "codicon.css"]);
         const nonce = getNonce();
@@ -134,12 +134,29 @@ class CatCodingPanel {
             vscode.window.showInformationMessage(`Received message: ${message}`);
             const command = message.command;
             switch (command) {
-            case "requestNoteData":
-                webview.postMessage({
-                command: "receiveDataInWebview",
-                payload: JSON.stringify(this._sqlEdit),
-                });
+              case "requestNoteData":
+                  webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
                 break;
+              case "alert":
+                vscode.window.showErrorMessage(message.text);
+                webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
+                break;
+              case "info":
+                vscode.window.showInformationMessage(message.text);
+                webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
+                break;                  
+              case "error":
+                vscode.window.showInformationMessage(message.text);
+                break;                  
             }
         });
 
@@ -225,4 +242,4 @@ async function comman_2(){
 	console.log(data);
 }
 
-export default CatCodingPanel;
+export default SqlEditPanel;
