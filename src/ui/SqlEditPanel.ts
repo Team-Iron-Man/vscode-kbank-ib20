@@ -20,7 +20,6 @@ class SqlEditPanel {
   private _sqlEdit: SqlEdit;
 
   public static createOrShow(extensionUri: vscode.Uri, sqlEdit: SqlEdit) {
-    comman_2();
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -135,6 +134,7 @@ class SqlEditPanel {
             const command = message.command;
             switch (command) {
               case "requestNoteData":
+                const data = comman_2();
                   webview.postMessage({
                   command: "receiveDataInWebview",
                   payload: JSON.stringify(this._sqlEdit),
