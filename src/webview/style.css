@@ -1,16 +1,16 @@
-#webview-body {
+/* #webview-body {
   display: flex;
   flex-direction: column;
 }
+
+#submit-button {
+  width: fit-content;
+} */
 
 #notes-form {
   display: grid;
   grid-auto-flow: row;
   grid-row-gap: 1.5rem;
-}
-
-#submit-button {
-  width: fit-content;
 }
 
 #tags-container {
@@ -20,12 +20,76 @@
   grid-column-gap: 0.5rem;
 }
 
-@media screen and (min-width: 1024px) {
+.dropdown-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.dropdown-container label {
+  display: block;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+  font-size: var(--vscode-font-size);
+  line-height: normal;
+  margin-bottom: 2px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+/* vscode-dropdown {
+  margin-bottom: 20px;
+}
+
+label {
+  margin-bottom: 4px;
+}
+
+vscode-radio-group {
+  margin: 10px 0;
+}
+
+vscode-text-area {
+  margin: 10px 0;
+}
+
+vscode-button {
+  margin: 10px 0;
+} */
+
+/*---------------------
+ *  Modifiers
+ *-------------------*/
+
+ @keyframes codicon-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+p {
+  font-size: 1rem;
+  margin: 30px 0 10px 0;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+}
+.container > * {
+  margin-right: 10px;
+}
+
+/* @media screen and (min-width: 1024px) {
   #webview-body {
     padding: 0 8rem;
     max-width: 1024px;
     margin: 0 auto;
   }
-}
-
-        
+} */

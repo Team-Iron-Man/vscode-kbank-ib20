@@ -2,9 +2,12 @@
  * Custom type declaration representing a Notepad note.
  */
 export type SqlEdit = {
-    queryid: "id",
-          type: "Query",
-          use: "",
-          tags: ["queryEdit"],
+    title: string;
+    id: string;
+    type: string;
+    use: string;
+    sql: string;
+    sqlnamespace: string;
+    tags?: string[];
   };
   

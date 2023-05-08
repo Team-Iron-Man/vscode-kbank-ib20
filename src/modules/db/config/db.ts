@@ -25,6 +25,6 @@ export async function query(sql: string, values?: any): Promise<any> {
       } finally {
         console.error('e',"release");
         if (connection){connection.release();} // 연결 풀에 연결 반환
-        pool.end();
+        //pool.end();
       }
 }
