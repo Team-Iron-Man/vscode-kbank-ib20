@@ -6,7 +6,7 @@ import { Note,SqlEdit } from "./types/Note";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
-import CatCodingPanel from './ui/EditPanel';
+import SqlEditPanel from './ui/SqlEditPanel';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from vscode-kbank-ib20!');
 		const showData: boolean = await showInputBox();
-		CatCodingPanel.createOrShow(context.extensionUri, sqledit);
+		SqlEditPanel.createOrShow(context.extensionUri, sqledit);
 	});
 
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
@@ -51,24 +51,24 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(		
 		vscode.commands.registerCommand('catCoding.start', () => {		  
-		  CatCodingPanel.createOrShow(context.extensionUri, sqledit);
+		  SqlEditPanel.createOrShow(context.extensionUri, sqledit);
 		})
 	  );
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.doRefactor', () => {
-		  if (CatCodingPanel.currentPanel) {
-			CatCodingPanel.currentPanel.doRefactor();
+		  if (SqlEditPanel.currentPanel) {
+			SqlEditPanel.currentPanel.doRefactor();
 		  }
 		})
 	  );
 
 	  if (vscode.window.registerWebviewPanelSerializer) {
-		vscode.window.registerWebviewPanelSerializer(CatCodingPanel.viewType, {
+		vscode.window.registerWebviewPanelSerializer(SqlEditPanel.viewType, {
 		  async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
 			console.log(`Got state: ${state}`);
 			webviewPanel.webview.options = getWebviewOptions(context.extensionUri);
-			CatCodingPanel.revive(webviewPanel, context.extensionUri, sqledit);
+			SqlEditPanel.revive(webviewPanel, context.extensionUri, sqledit);
 		  }
 		});
 	  }
