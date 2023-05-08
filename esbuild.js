@@ -32,7 +32,7 @@ const webviewConfig = {
   target: "es2020",
   format: "esm",
   entryPoints: ["./src/webview/main.ts"],
-  outfile: "./out/webview.js",
+  outfile: "./out/main.js",
   plugins: [
     
     // Copy webview css files to `out` directory unaltered

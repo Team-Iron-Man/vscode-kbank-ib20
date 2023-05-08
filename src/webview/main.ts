@@ -93,20 +93,22 @@ function setVSCodeMessageListener() {
   window.addEventListener("message", (event) => {    
     const command = event.data.command;
     const noteData = JSON.parse(event.data.payload);
-    vscode.postMessage({command: 'info',text: '🐛  on line '});
     switch (command) {
       case "receiveDataInWebview":
         openedNote = noteData;
         //renderTags(openedNote.tags);
+        vscode.postMessage({command: 'error',text: '🐛  on line2 '});
         break;
     }
   });
 }
 
 function queryTest() {
+  vscode.postMessage({command: 'info',text: '🐛  on queryTest '});
 }
 
 function querySave() {
+  vscode.postMessage({command: 'alert',text: '🐛  on querySave '});
 }
 
 function refresh() {
@@ -114,11 +116,10 @@ function refresh() {
   console.log("noteInput");
   const formatted = format(noteInput.value);
   noteInput.value = formatted;
-  console.log(formatted);
-  
+  console.log(formatted);  
   let inputCounter = 0;
   const container = document.getElementById("paramContainer");
-  clearBox(container);
+  //clearBox(container);
   const row = document.createElement('div');
   //row.className = 'row';
   for (let i = 0; i < 3; i++) {

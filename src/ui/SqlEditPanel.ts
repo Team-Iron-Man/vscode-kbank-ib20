@@ -125,7 +125,7 @@ class SqlEditPanel {
         // const stylesResetUri = webview.asWebviewUri(styleResetPath);
         // const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
         console.log("extensionUri: ",this._extensionUri);
-        const webviewUri = getUri(webview, this._extensionUri, ["out", "webview.js"]);
+        const webviewUri = getUri(webview, this._extensionUri, ["out", "main.js"]);
         const styleUri = getUri(webview, this._extensionUri, ["out", "style.css"]);
         const codiconUri = getUri(webview, this._extensionUri, ["out", "codicon.css"]);
         const nonce = getNonce();
@@ -134,12 +134,29 @@ class SqlEditPanel {
             vscode.window.showInformationMessage(`Received message: ${message}`);
             const command = message.command;
             switch (command) {
-            case "requestNoteData":
-                webview.postMessage({
-                command: "receiveDataInWebview",
-                payload: JSON.stringify(this._sqlEdit),
-                });
+              case "requestNoteData":
+                  webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
                 break;
+              case "alert":
+                vscode.window.showErrorMessage(message.text);
+                webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
+                break;
+              case "info":
+                vscode.window.showInformationMessage(message.text);
+                webview.postMessage({
+                  command: "receiveDataInWebview",
+                  payload: JSON.stringify(this._sqlEdit),
+                  });
+                break;                  
+              case "error":
+                vscode.window.showInformationMessage(message.text);
+                break;                  
             }
         });
 
