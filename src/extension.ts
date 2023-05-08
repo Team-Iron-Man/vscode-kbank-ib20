@@ -2,7 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { showQuickPick, showInputBox } from './functions/basicInput';
-import { Note,SqlEdit } from "./types/Note";
+import { Note  } from "./types/Note";
+import { SqlEdit  } from "./types/SqlEdit";
 import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
