@@ -208,7 +208,7 @@ async function SqlMapConfigResult() {
 
   let u2cconfigList: U2CSQLMAPCONFIG[];
   
-  console.log("DB STEP 1 : await u2csqlmapconfigSelect()");
+  console.log("DB STEP 1 : await getSqlMapConfig()");
   u2cconfigList = await SqlConfigService.selectSqlConfig();
   console.log("DB STEP 4 : u2cconfigList" + u2cconfigList);  
   

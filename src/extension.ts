@@ -2,6 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { showQuickPick, showInputBox } from './functions/basicInput';
+import { multiStepInput, addNameSpace } from './functions/multiStepInput';
+import { showNameSpaceInputBox } from './functions/addNameSpace';
 import { Note  } from "./types/Note";
 import { SqlEdit  } from "./types/SqlEdit";
 import { getWebviewContent } from "./ui/getWebviewContent";
@@ -42,10 +44,13 @@ export function activate(context: vscode.ExtensionContext) {
 		SqlEditPanel.createOrShow(context.extensionUri, sqledit);
 	});
 
-	const sqlmapProvider = new SqlmapDataExplorer(rootPath); //왼쪽 하단 TreeView ( vscode.TreeDataProvider )
-	new SqlconfigExplorer(context, sqlmapProvider); //왼쪽 상단 WebviewView Provider //주입된 프로바이더에 이벤트를 등록한다.
-	sqlmapProvider.sendMessage(`Hello from provider (${new Date().toISOString()})`);//등록된 리스너로 이벤트를 발생시킨다.
-
+	
+	console.log('ALM#1 왼쪽 하단 TreeView ( vscode.TreeDataProvider 확장 class) 생성')
+	const sqlmapProvider = new SqlmapDataExplorer(rootPath)
+	console.log('ALM#2 왼쪽 상단 WebviewView Provider 생성')
+	new SqlconfigExplorer(context, sqlmapProvider)
+	//등록된 리스너로 이벤트를 발생시킨다.
+	sqlmapProvider.sendMessage(`Hello from provider (${new Date().toISOString()})`)
 	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
 
 
@@ -75,7 +80,6 @@ export function activate(context: vscode.ExtensionContext) {
 	  }
 
 	//Context Menu 정의 (마우스 우클릭) [START]
-
 	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddSelQry',
 		item => command_0(item)); //TEST
 	vscode.commands.registerCommand('sqlmapExplorer.contextMenuAddUpdQry',
@@ -101,10 +105,34 @@ export function activate(context: vscode.ExtensionContext) {
 	//Context Menu 정의 (마우스 우클릭) [END]
 
 	//TreeView CodiCon 정의 [START]
+	//Codicon [+] 클릭. To Do 네임스페이스 추가 팝업
+	context.subscriptions.push(vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace', async () => {
+		const options: { [key: string]: (context: vscode.ExtensionContext) => Promise<void> } = {
+			//showQuickPick,
+			//showInputBox,
+			addNameSpace,
+			multiStepInput
+			//quickOpen,
+		};
+		const quickPick = vscode.window.createQuickPick();
+		quickPick.items = Object.keys(options).map(label => ({ label }));
+		quickPick.onDidChangeSelection(selection => {
+			if (selection[0]) {
+				options[selection[0].label](context)
+					.catch(console.error);
+			}
+		});
+		quickPick.onDidHide(() => quickPick.dispose());
+		quickPick.show();
+	}));
+	//vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace',
+	//() => showNameSpaceInputBox())
+	vscode.commands.registerCommand('sqlconfigExplorer.delNameSpace',
+	() => openUntitledFile(context, panel))
 	//TO DO 돋보기? 검색?
-	//Codicon [+] 클릭. To Do NameSpace추가 팝업 띄우기
+	//Codicon [+] 클릭. To Do ?
 	vscode.commands.registerCommand('sqlmapExplorer.addEntry',
-		() => openUntitledFile(context, panel));
+		() => openUntitledFile(context, panel))
 	//TO DO. Codicon [-] 클릭. NameSpace 삭제 팝업 띄우기.
 	vscode.commands.registerCommand('sqlmapExplorer.delEntry',
 		(item: Dependency) => {

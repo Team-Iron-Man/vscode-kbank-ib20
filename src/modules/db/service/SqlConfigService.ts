@@ -9,8 +9,8 @@ export const SqlConfigService = {
     // },
     
     async selectSqlConfig(): Promise<U2CSQLMAPCONFIG[]> {
-      console.log("DB STEP 2 : SqlConfigService =======");  
-      return SqlConfigDao.u2csqlmapconfigSelect();
+      console.log('ALM#2-1 [Get Data From DB] 쿼리 Req ===> SqlConfigService.selectSqlConfig() 호출')
+      return SqlConfigDao.getSqlMapConfig();
     }
     // async create(user: U2CSQLMAPCONFIG): Promise<U2CSQLMAPCONFIG> {
     //   return SqlConfigDao.create(user);

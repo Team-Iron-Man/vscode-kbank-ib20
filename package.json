@@ -11,7 +11,8 @@
   ],
   "activationEvents": [
     "onCommand:vscode-kbank-ib20.helloWorld",
-    "onNotebook:my-notebook"
+    "onNotebook:my-notebook",
+    "onCommand:samples.quickInput"
   ],
   "extensionKind": [
     "window"
@@ -19,6 +20,10 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
+      {
+				"command": "samples.quickInput",
+				"title": "Quick Input Samples"
+			},
       {
 				"command": "catCoding.start",
 				"title": "Start cat coding session",
@@ -36,6 +41,22 @@
       {
         "command": "vscode-kbank-ib20.helloWorld",
         "title": "IB20 DBIO"
+      },
+      {
+        "command": "sqlconfigExplorer.addNameSpace",
+        "title": "Add Namespace",
+        "icon": {
+          "light": "resources/light/plus.svg",
+          "dark": "resources/dark/plus.svg"
+        }
+      },
+      {
+        "command": "sqlconfigExplorer.delNameSpace",
+        "title": "Delete Namespace",
+        "icon": {
+          "light": "resources/light/minus.svg",
+          "dark": "resources/dark/minus.svg"
+        }
       },
       {
         "command": "sqlmapExplorer.addEntry",
@@ -100,17 +121,27 @@
         {
           "type": "webview",
           "id": "sqlconfigExplorer",
-          "name": "Sql Config Explorer"
+          "name": "Sql Config"
         },
         {
           "type": "tree",
           "id": "sqlmapExplorer",
-          "name": "Sql Namespace Explorer"
+          "name": "Sql Map"
         }
       ]
     },
     "menus": {
       "view/title": [
+        {
+          "command": "sqlconfigExplorer.addNameSpace",
+          "when": "view == sqlconfigExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "sqlconfigExplorer.delNameSpace",
+          "when": "view == sqlconfigExplorer",
+          "group": "navigation"
+        },
         {
           "command": "sqlmapExplorer.addEntry",
           "when": "view == sqlmapExplorer",
