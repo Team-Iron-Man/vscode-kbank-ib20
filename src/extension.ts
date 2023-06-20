@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { showQuickPick, showInputBox } from './functions/basicInput';
 import { multiStepInput, addNameSpace } from './functions/multiStepInput';
-import { showNameSpaceInputBox } from './functions/addNameSpace';
+
 import { Note  } from "./types/Note";
 import { SqlEdit  } from "./types/SqlEdit";
 import { getWebviewContent } from "./ui/getWebviewContent";
