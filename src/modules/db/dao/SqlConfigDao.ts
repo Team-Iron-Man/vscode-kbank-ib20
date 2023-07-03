@@ -39,7 +39,7 @@ export const SqlConfigDao = {
     return u2csqlmapconfig;
 
   },
-  async getSqlMap(configid: string): Promise<U2CSQLMAPCONFIG[]> {
+  async getSqlMap(configid: string|undefined): Promise<U2CSQLMAPCONFIG[]> {
     //resultMap="SqlMapResult"
     let u2csqlmapconfig: U2CSQLMAPCONFIG[]
     const getsqlmap = `
@@ -169,6 +169,53 @@ export const SqlConfigDao = {
       };
     });
     return u2csqlmapconfig;
+  }, 
+  async checkSqlMap(configid: string|undefined, sqlmapname: string): Promise<U2CSQLMAPCONFIG[]> {
+    //resultMap="checkSqlMapResult"
+    let u2csqlmapconfig: U2CSQLMAPCONFIG[]
+    const searchquery = `
+      SELECT SQLMAP_ID
+        ,SQLMAP_NAME
+        ,CONFIG_ID
+      FROM U2C_SQLMAP
+      WHERE CONFIG_ID = ?
+        AND SQLMAP_NAME = ?
+        AND USE_YN = 'Y'`
+    const rows = await query(searchquery, [configid, sqlmapname])
+
+    u2csqlmapconfig = rows.map((row: any) => {//TO DO 컬럼에 맞게 수정
+      return {
+        SQLMAP_ID: row.SQLMAP_ID,
+        SQLMAP_NAME: row.SQLMAP_NAME,
+        CONFIG_ID: row.CONFIG_ID
+
+      };
+    });
+    return u2csqlmapconfig;
+  }, 
+  async insertSqlMap(configid: string|undefined, sqlmapname: string|undefined): Promise<void> {
+    
+    //TODO: 운영적용시, oracle 문법(NEXTVAL) <-> mysql 용으로 변경
+    /* //운영적용 시
+    const searchquery = `
+      INSERT INTO
+        U2C_SQLMAP (SQLMAP_ID, SQLMAP_NAME, CONFIG_ID, USE_YN, STATE)
+        VALUES (U2C_SQLMAP_SEQ.NEXTVAL, ?, ?, 'Y', '01')`
+    */
+
+    //테스트 시
+    const searchquery = `
+        INSERT INTO U2C_SQLMAP (SQLMAP_NAME, CONFIG_ID, USE_YN, STATE)
+        VALUES (?, ?, 'Y', '01')
+        `
+    const rows = await query(searchquery, [sqlmapname,configid])
+  }, 
+  async deleteSqlMap(sqlmapid:string): Promise<void> {
+    const searchquery = `
+      UPDATE U2C_SQLMAP
+        SET  USE_YN = 'N', STATE = '06'
+      WHERE SQLMAP_ID = ?`
+    const rows = await query(searchquery, [sqlmapid])
   }
 
   // async create(user: U2CSQLMAPCONFIG): Promise<U2CSQLMAPCONFIG> {

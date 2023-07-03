@@ -11,6 +11,7 @@ import { U2CSQLMAPCONFIG } from "../types/SqlConfig";
 let cfg: Map<string, string> = new Map();
 let cfgString = '';
 let dataAttributes = ''
+let sendToCommand: U2CSQLMAPCONFIG[];
 export class SqlconfigExplorer {
 
   constructor(context: vscode.ExtensionContext, sqlmapDataExplorer: SqlmapDataExplorer) {
@@ -21,6 +22,12 @@ export class SqlconfigExplorer {
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(SqlconfigProvider.viewType, configProvider
       ));
+    
+      
+  }
+  public getSqlConfig():U2CSQLMAPCONFIG[]{
+    console.log('ALM#3 NAMESPACE 구현 [sendToCommand] <- ',sendToCommand)
+    return sendToCommand
   }
 }
 
@@ -31,7 +38,8 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
   private _view: vscode.WebviewView | undefined;
   private _disposables: vscode.Disposable[] = [];
   private _sqlmapDataExplorer?: SqlmapDataExplorer;
-
+  
+  
   constructor(private readonly _extensionUri: vscode.Uri, sqlmapDataExplorer: SqlmapDataExplorer) {
     console.log('ALM#2-1 class SqlconfigProvider constructor')
     if (SqlmapDataExplorer) {
@@ -39,44 +47,47 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
       //this.initialize(sqlmapDataExplorer);
       // this.getSQLConfigLists()
       this._sqlmapDataExplorer = sqlmapDataExplorer
-        
+      
       this._sqlmapDataExplorer.onMessage((message: string) => {
         console.log('ALM#2-1 class SqlconfigProvider constructor : onMessage : Received message :', message)
         vscode.window.showInformationMessage(`ALM#2-1 class SqlconfigProvider Received message: ${message}`)
       });
     }
   }
-
+  
   public async resolveWebviewView(//IB20 SQLMAP CONFIG WEBVIEW 생성
-    webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
-    token: vscode.CancellationToken
+  webviewView: vscode.WebviewView,
+  context: vscode.WebviewViewResolveContext,
+  token: vscode.CancellationToken
   ) {
-
+    
     this._view = webviewView;
     
     //webviewView.webview.options = {
-    this._view.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [
+      this._view.webview.options = {
+        enableScripts: true,
+        localResourceRoots: [
         //this._extensionUri
         vscode.Uri.joinPath(this._extensionUri, 'out')
       ]
     };
-
+    
     
     this._view.webview.html = await this.initialize(webviewView.webview, this._extensionUri)
-
+    
+    
     this._view.webview.onDidReceiveMessage((message) => {
       console.log(` !!! 선택 했다 !!! : Received selected option: ` + message.queryList);
       if (message.type === 'myEvent' && this._sqlmapDataExplorer) {
         this._sqlmapDataExplorer.handleMessage(message.queryList);
-      }
+      } 
     });
     //TO DO select 된 sqlconfig값을 sqlmapDataExplorere에 postMessage...
+    this._view.webview.postMessage({ command: 'cfgList', payload: sendToCommand});
 
   }
-
+  
+  
   private _getHtmlForWebView(webview: vscode.Webview, extensionUri: Uri) {
     
     console.log('ALM#2-1 [1] [_getHtmlForWebView] ')
@@ -152,6 +163,7 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
                   })
                 }              
 
+                
             })
 
           </script>
@@ -198,9 +210,18 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
     }
 
     //cfg = item;
+    //sendToCommand = u2cconfigList
+    this.setSqlConfig(u2cconfigList);
     console.log('ALM#2-1 [Get Data From DB][3] ... _getHtmlForWebView cfg:', cfg.size)
 
   }
+  public setSqlConfig(u2cconfigList: any){
+    
+    console.log('ALM#3 NAMESPACE 구현 [setSqlConfig] <- ',u2cconfigList)
+    sendToCommand = u2cconfigList
+     
+  }
+  
 }
 
 

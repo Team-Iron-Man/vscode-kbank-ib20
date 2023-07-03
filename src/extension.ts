@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { showQuickPick, showInputBox } from './functions/basicInput';
-import { multiStepInput, addNameSpace } from './functions/multiStepInput';
+import { addNameSpace, delNameSpace } from './functions/multiStepInput';
 
 import { Note  } from "./types/Note";
 import { SqlEdit  } from "./types/SqlEdit";
@@ -10,6 +10,11 @@ import { getWebviewContent } from "./ui/getWebviewContent";
 import { SqlconfigExplorer } from './ui/sqlconfigExplorer';
 import { SqlmapDataExplorer, Dependency } from './ui/sqlmapDataExplorer';
 import SqlEditPanel from './ui/SqlEditPanel';
+import { SqlConfigService } from "./modules/db/service/SqlConfigService";
+import { U2CSQLMAPCONFIG } from "./types/SqlConfig";
+import { Context } from 'mocha';
+
+
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -48,7 +53,9 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('ALM#1 왼쪽 하단 TreeView ( vscode.TreeDataProvider 확장 class) 생성')
 	const sqlmapProvider = new SqlmapDataExplorer(rootPath)
 	console.log('ALM#2 왼쪽 상단 WebviewView Provider 생성')
-	new SqlconfigExplorer(context, sqlmapProvider)
+	const sqlconfigWV = new SqlconfigExplorer(context, sqlmapProvider)
+	let sqlconfig:U2CSQLMAPCONFIG[] = sqlconfigWV.getSqlConfig()
+	
 	//등록된 리스너로 이벤트를 발생시킨다.
 	sqlmapProvider.sendMessage(`Hello from provider (${new Date().toISOString()})`)
 	vscode.window.registerTreeDataProvider('sqlmapExplorer', sqlmapProvider); //viewID:sqlmapExplorer
@@ -106,12 +113,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	//TreeView CodiCon 정의 [START]
 	//Codicon [+] 클릭. To Do 네임스페이스 추가 팝업
-	context.subscriptions.push(vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace', async () => {
+	/*context.subscriptions.push(vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace', async () => {
 		const options: { [key: string]: (context: vscode.ExtensionContext) => Promise<void> } = {
 			//showQuickPick,
 			//showInputBox,
 			addNameSpace,
-			multiStepInput
+			delNameSpace
 			//quickOpen,
 		};
 		const quickPick = vscode.window.createQuickPick();
@@ -124,12 +131,14 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 		quickPick.onDidHide(() => quickPick.dispose());
 		quickPick.show();
-	}));
+	}));*/
 	//vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace',
 	//() => showNameSpaceInputBox())
+	vscode.commands.registerCommand('sqlconfigExplorer.addNameSpace', 
+	() => { addNameSpace(context) }) //	quick input
 	vscode.commands.registerCommand('sqlconfigExplorer.delNameSpace',
-	() => openUntitledFile(context, panel))
-	//TO DO 돋보기? 검색?
+	() => { delNameSpace(context) }) //	quick input
+	//TO DO 돋보기? 검색기능
 	//Codicon [+] 클릭. To Do ?
 	vscode.commands.registerCommand('sqlmapExplorer.addEntry',
 		() => openUntitledFile(context, panel))
@@ -172,10 +181,10 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 
 	let notes: Note[] = [];
 	const newNote: Note = {
-		id: "id",
-		title: "Query",
-		content: "",
-		tags: ["Personal"],
+		queryid: "id",
+		type: "Query",
+		use: "",
+		tags: ["queryEdit"],
 	};
 
 	if (!panel) {
@@ -197,7 +206,7 @@ async function openUntitledFile(context: vscode.ExtensionContext, panel: vscode.
 			case "updateNote":
 				const updatedNoteId = note.id;
 				const copyOfNotesArray = [...notes];
-				const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.id === updatedNoteId);
+				const matchingNoteIndex = copyOfNotesArray.findIndex((note) => note.queryid === updatedNoteId);
 				copyOfNotesArray[matchingNoteIndex] = note;
 				notes = copyOfNotesArray;
 				panel

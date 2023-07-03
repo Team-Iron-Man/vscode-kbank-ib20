@@ -111,7 +111,7 @@
       "activitybar": [
         {
           "id": "package-explorer",
-          "title": "Package Explorer",
+          "title": "IB20 SQL MAP",
           "icon": "resources/IB20_04.svg"
         }
       ]
@@ -121,12 +121,12 @@
         {
           "type": "webview",
           "id": "sqlconfigExplorer",
-          "name": "Sql Config"
+          "name": "SQL CONFIG"
         },
         {
           "type": "tree",
           "id": "sqlmapExplorer",
-          "name": "Sql Map"
+          "name": "SQL NAMESPACE & QUERY"
         }
       ]
     },

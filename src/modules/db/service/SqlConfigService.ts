@@ -11,7 +11,22 @@ export const SqlConfigService = {
     async selectSqlConfig(): Promise<U2CSQLMAPCONFIG[]> {
       console.log('ALM#2-1 [Get Data From DB] 쿼리 Req ===> SqlConfigService.selectSqlConfig() 호출')
       return SqlConfigDao.getSqlMapConfig();
+    },
+    async getSqlMap(configid: string|undefined): Promise<U2CSQLMAPCONFIG[]> {
+      return SqlConfigDao.getSqlMap(configid);
+    },
+    async checkSqlMap(configid: string|undefined, sqlmapname: string): Promise<U2CSQLMAPCONFIG[]> {
+      console.log('ALM#2-1 [Get Data From DB] 쿼리 Req ===> SqlConfigService.checkSqlMap() 호출:configid',configid,':sqlmapname',sqlmapname)
+      return SqlConfigDao.checkSqlMap(configid,sqlmapname);
+    },
+    async insertSqlMap(configid: string|undefined, sqlmapname: string|undefined): Promise<void> {
+      return SqlConfigDao.insertSqlMap(configid,sqlmapname);
+    },
+    async deleteSqlMap(sqlmapid:string): Promise<void> {
+      return SqlConfigDao.deleteSqlMap(sqlmapid);
     }
+    
+   
     // async create(user: U2CSQLMAPCONFIG): Promise<U2CSQLMAPCONFIG> {
     //   return SqlConfigDao.create(user);
     // },
