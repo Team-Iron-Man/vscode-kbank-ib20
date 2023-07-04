@@ -77,9 +77,10 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
     
     
     this._view.webview.onDidReceiveMessage((message) => {
-      console.log(` !!! 선택 했다 !!! : Received selected option: ` + message.queryList);
+      //console.log(` !!! 선택 했다 !!! : Received selected option: ` + message.queryList);
+      console.log(` !!! 선택 했다 !!! : Received selected option: ` + message.selectedConfig);
       if (message.type === 'myEvent' && this._sqlmapDataExplorer) {
-        this._sqlmapDataExplorer.handleMessage(message.queryList);
+        this._sqlmapDataExplorer.handleMessage(message.selectedConfig);
       } 
     });
     //TO DO select 된 sqlconfig값을 sqlmapDataExplorere에 postMessage...
@@ -132,7 +133,7 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
 
                     console.log('ALM#2-1-1 _getHtmlForWebView addEventListener 감지 -> selectOptId:',selectOptId)//CONFIG
                     console.log('ALM#2-1-1 _getHtmlForWebView addEventListener 감지 -> selectOptVal:',selectOptVal)//NAME
-                    console.log('ALM#2-1-1 _getHtmlForWebView addEventListener 감지 -> selectOptDataId:',selectOptDataId)
+                    console.log('ALM#2-1-1 _getHtmlForWebView addEventListener 감지 -> selectOptDataId:',selectOptDataId)//CONFIG_ID
                     
                     //TO DO key, value 쌍으로 queryList 전달
                     let _queryList = [
@@ -158,7 +159,12 @@ class SqlconfigProvider implements vscode.WebviewViewProvider {
 
                       }
                     ]
-                    vscode.postMessage({ type: 'myEvent', queryList: _queryList}, '*');
+                    let selectedConfig = {
+                      CONFIG_NAME : selectOptVal,
+                      CONFIG_ID : selectOptDataId
+                    }
+                    //vscode.postMessage({ type: 'myEvent', queryList: _queryList}, '*');
+                    vscode.postMessage({ type: 'myEvent', selectedConfig: selectedConfig}, '*');
                     
                   })
                 }              

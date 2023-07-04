@@ -1,5 +1,5 @@
 import { executeQuery, query } from '../config/db';
-import { U2CSQLMAPCONFIG } from '../../../types/SqlConfig';
+import { U2CSQLMAPCONFIG, U2C_SQLMAP_QUERY } from '../../../types/SqlConfig';
 
 export const SqlConfigDao = {
 
@@ -64,9 +64,9 @@ export const SqlConfigDao = {
     });
     return u2csqlmapconfig;
   },
-  async getSqlMapQueryList(sqlmapid: string): Promise<U2CSQLMAPCONFIG[]> {
+  async getSqlMapQueryList(sqlmapid: string): Promise<U2C_SQLMAP_QUERY[]> {
     //resultMap="SqlMapQueryListResult"
-    let u2csqlmapconfig: U2CSQLMAPCONFIG[]
+    let u2csqlmapquery: U2C_SQLMAP_QUERY[]
     const getsqlmapquerylist = `
     SELECT QUERY_ID
       ,QUERY_NAME
@@ -84,9 +84,16 @@ export const SqlConfigDao = {
     ORDER BY QUERY_NAME`
     const rows = await query(getsqlmapquerylist, [sqlmapid])
 
-    u2csqlmapconfig = rows.map((row: any) => {
+    u2csqlmapquery = rows.map((row: any) => {
       return {
         QUERY_ID: row.QUERY_ID,
+        USE_YN: row.USE_YN,
+        CREATE_USER: row.CREATE_USER,
+        CREATE_DATE: row.CREATE_DATE,
+        UPDATE_USER: row.UPDATE_USER,
+        UPDATE_DATE: row.UPDATE_DATE,
+        DESCRIPTION: row.DESCRIPTION,
+        QUERY_NAME: row.QUERY_NAME,
         QUERY_TYPE: row.QUERY_TYPE,
         SQL_0: row.SQL_0,
         SQL_1: row.SQL_1,
@@ -94,12 +101,10 @@ export const SqlConfigDao = {
         SQL_3: row.SQL_3,
         SQL_4: row.SQL_4,
         SQLMAP_ID: row.SQLMAP_ID,
-        USE_YN: row.USE_YN,
-        DESCRIPTION: row.DESCRIPTION
-
+        STAT: row.STAT,
       };
     });
-    return u2csqlmapconfig;
+    return u2csqlmapquery;
   },
   async getSqlMapQuery(queryid: string): Promise<U2CSQLMAPCONFIG[]> {
     //resultMap="SqlMapQueryResult"

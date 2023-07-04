@@ -1,6 +1,8 @@
 import * as vscode from 'vscode'
 import * as fs from 'fs'
 import * as path from 'path'
+import { SqlConfigService } from "../modules/db/service/SqlConfigService";
+import { U2CSQLMAPCONFIG, U2C_SQLMAP_QUERY } from "../types/SqlConfig";
 
 export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
@@ -90,80 +92,71 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		this._onDidChangeTreeData.fire(parentNode)
 	}
 
-	public handleMessage(queryList: any): void {
 
-		console.log('ALM#1-1 handleMessage 호출됨 -> Webview에서 전달된 데이터를 처리:Received data:',queryList)
-		this.initNode()
-		//let SQLNmSp = Object.keys(queryList)[0] //SQL_CONFIG명
-		let SqlConfig = ''
-		let SqlNmSp = ''
-		let SqlNm = ''
-		let SqlQuery = ''
-		let rootNode:Dependency
-		let rootNodeTmp:Dependency
-		let childNode:Dependency
+
+	public async handleMessage(selectedConfig: any): Promise<void> {
+
+		/*
+		let selectedConfig = {
+			CONFIG_NAME : selectOptVal,
+			CONFIG_ID : selectOptDataId
+		}
+		*/
+		this.initNode() //TreeView 노드 초기화
+
+		console.log('ALM#1-1 handleMessage 호출됨 -> Webview에서 전달된 데이터를 처리:Received data:',selectedConfig)
+
+		const maps: Map<string, string> = await getSqlMap(selectedConfig.CONFIG_ID);
 		
-		for(let i=0; i < queryList.length; i++){
+		/* 
+		  QUERY_ID : string;
+			USE_YN : string;
+			CREATE_USER : string;
+			CREATE_DATE : string;
+			UPDATE_USER : string;
+			UPDATE_DATE : string;
+			DESCRIPTION : string;
+			QUERY_NAME : string;
+			QUERY_TYPE : string;
+			SQL_0 : string;
+			SQL_1 : string;
+			SQL_2 : string;
+			SQL_3 : string;
+			SQL_4 : string;
+			SQLMAP_ID : string;
+			STATE: string;
+		*/
+		maps.forEach(async (key, value) => {//key : SQLMAP_NAME, value.toString(): SQLMAP_ID
 
-			SqlConfig = queryList[i].CONFIG
-			SqlNmSp = queryList[i].NAME
-			SqlNm = queryList[i].SQLNAME
-			SqlQuery = queryList[i].SQL_0
-
-			
-			rootNode = new Dependency(SqlNmSp, vscode.TreeItemCollapsibleState.Expanded)
-			
-			//TO DO : SqlNmSp 같을때 같은 parent 하위에 child 만 추가 하도록 로직구성 필요.
-			if(queryList.length == 1) {
-				
-				this.setRootNode(rootNode)
-				childNode = new Dependency(SqlNm, vscode.TreeItemCollapsibleState.None)
-				this.setChildNode(rootNode, childNode)
-				childNode.parent = rootNode.parent
-				this.refresh(rootNode)
-				break
-			} else {
-				
-				if(i+1 < queryList.length) {
-					if(SqlNmSp == queryList[i+1].NAME){
-						//rootNode는 그대로, child만 추가
-						rootNodeTmp = rootNode
-						
-						this.setRootNode(rootNodeTmp)
-						childNode = new Dependency(SqlNm, vscode.TreeItemCollapsibleState.None)
-						this.setChildNode(rootNodeTmp, childNode)
-						childNode.parent = rootNodeTmp.parent
-						this.refresh(rootNodeTmp)
-					} else {
-						rootNode = new Dependency(SqlNmSp, vscode.TreeItemCollapsibleState.Expanded)
-						this.setRootNode(rootNode)
-						childNode = new Dependency(SqlNm, vscode.TreeItemCollapsibleState.None)
-						this.setChildNode(rootNode, childNode)
-						childNode.parent = rootNode.parent
-						this.refresh(rootNode)
+			let queryList: U2C_SQLMAP_QUERY[] = await getSqlMapQueryList(value.toString())
+			if (queryList.length === 0) {
+				return;
+			}
+	
+			let rootNode: Dependency | undefined;
+			let previousNamespace: string | undefined;
+	
+			for (const query of queryList) {
+					const namespace = key;
+					const sqlname = query.QUERY_NAME;
+	
+					if (namespace !== previousNamespace) {
+							rootNode = new Dependency(namespace, vscode.TreeItemCollapsibleState.Expanded);
+							this.setRootNode(rootNode);
+							previousNamespace = namespace;
 					}
-				} else {//last idx
-					if(SqlNmSp == queryList[i-1].NAME){
-						///rootNode는 그대로, child만 추가
-						rootNodeTmp = rootNode
-						
-						this.setRootNode(rootNodeTmp)
-						childNode = new Dependency(SqlNm, vscode.TreeItemCollapsibleState.None)
-						this.setChildNode(rootNodeTmp, childNode)
-						childNode.parent = rootNodeTmp.parent
-						this.refresh(rootNodeTmp)
-					} else {
-						rootNode = new Dependency(SqlNmSp, vscode.TreeItemCollapsibleState.Expanded)
-						this.setRootNode(rootNode)
-						childNode = new Dependency(SqlNm, vscode.TreeItemCollapsibleState.None)
-						this.setChildNode(rootNode, childNode)
-						childNode.parent = rootNode.parent
-						this.refresh(rootNode)
+	
+					if (rootNode) {
+							const childNode = new Dependency(sqlname, vscode.TreeItemCollapsibleState.None);
+							this.setChildNode(rootNode, childNode);
+							childNode.parent = rootNode.parent;
 					}
-				}
 			}
 			
-		}
+		});
+
+		
+		
 		
 	}
 
@@ -175,6 +168,27 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		}
 		return true
 	}
+}
+export async function getSqlMap(configid: string|undefined) {
+	let u2csqlmapList: U2CSQLMAPCONFIG[]
+	let sqlmap: Map<string, string> = new Map()
+	
+	u2csqlmapList = await SqlConfigService.getSqlMap(configid);
+	
+	if (u2csqlmapList.length) {
+		u2csqlmapList.map((row: any) => {
+			sqlmap.set(row.SQLMAP_ID, row.SQLMAP_NAME);
+		})
+	} else {
+		console.log('ALM#2-1 [Get Data From DB][2] FAIL => 데이터가 없습니다 !!! ')
+	}
+	
+	return sqlmap
+}
+export async function getSqlMapQueryList(sqlmapid: string) {
+	let u2csqlmapquery: U2C_SQLMAP_QUERY[]
+	u2csqlmapquery = await SqlConfigService.getSqlMapQueryList(sqlmapid);
+	return u2csqlmapquery
 }
 
 export class Dependency extends vscode.TreeItem {

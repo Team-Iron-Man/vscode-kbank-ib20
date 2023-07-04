@@ -1,5 +1,5 @@
 import { SqlConfigDao } from '../dao/SqlConfigDao';
-import { U2CSQLMAPCONFIG } from '../../../types/SqlConfig';
+import { U2CSQLMAPCONFIG, U2C_SQLMAP_QUERY } from '../../../types/SqlConfig';
 
 export const SqlConfigService = {
     
@@ -24,6 +24,9 @@ export const SqlConfigService = {
     },
     async deleteSqlMap(sqlmapid:string): Promise<void> {
       return SqlConfigDao.deleteSqlMap(sqlmapid);
+    },
+    async getSqlMapQueryList(sqlmapid:string): Promise<U2C_SQLMAP_QUERY[]> {
+      return SqlConfigDao.getSqlMapQueryList(sqlmapid);
     }
     
    
