@@ -27,6 +27,9 @@ export const SqlConfigService = {
     },
     async getSqlMapQueryList(sqlmapid:string): Promise<U2C_SQLMAP_QUERY[]> {
       return SqlConfigDao.getSqlMapQueryList(sqlmapid);
+    },
+    async delQry(sqlmapid:string, qryid:string): Promise<void> {
+      return SqlConfigDao.delQry(sqlmapid, qryid);
     }
     
    

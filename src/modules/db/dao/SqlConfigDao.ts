@@ -221,6 +221,13 @@ export const SqlConfigDao = {
         SET  USE_YN = 'N', STATE = '06'
       WHERE SQLMAP_ID = ?`
     const rows = await query(searchquery, [sqlmapid])
+  }, 
+  async delQry(sqlmapid:string, qryid:string): Promise<void> {
+    const searchquery = `
+      DELETE FROM U2C_SQLMAP_QUERY
+		  WHERE SQLMAP_ID = ? AND QUERY_ID = ?
+      `
+    const rows = await query(searchquery, [sqlmapid, qryid])
   }
 
   // async create(user: U2CSQLMAPCONFIG): Promise<U2CSQLMAPCONFIG> {

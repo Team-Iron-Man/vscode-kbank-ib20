@@ -21,19 +21,23 @@
   "contributes": {
     "commands": [
       {
-				"command": "samples.quickInput",
-				"title": "Quick Input Samples"
-			},
+        "command": "catCoding.start",
+        "title": "Start cat coding session",
+        "category": "Cat Coding"
+      },
       {
-				"command": "catCoding.start",
-				"title": "Start cat coding session",
-				"category": "Cat Coding"
-			},
-			{
-				"command": "catCoding.doRefactor",
-				"title": "Do some refactoring",
-				"category": "Cat Coding"
-			},
+        "command": "sqlmapExplorer.search",
+        "title": "IB20 Search",
+        "icon": {
+          "light": "resources/light/search.svg",
+          "dark": "resources/dark/search.svg"
+        }
+      },
+      {
+        "command": "catCoding.doRefactor",
+        "title": "Do some refactoring",
+        "category": "Cat Coding"
+      },
       {
         "command": "sampleExtension.run",
         "title": "Run Sample Extension"
@@ -46,32 +50,32 @@
         "command": "sqlconfigExplorer.addNameSpace",
         "title": "Add Namespace",
         "icon": {
-          "light": "resources/light/plus.svg",
-          "dark": "resources/dark/plus.svg"
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
         }
       },
       {
         "command": "sqlconfigExplorer.delNameSpace",
         "title": "Delete Namespace",
         "icon": {
-          "light": "resources/light/minus.svg",
-          "dark": "resources/dark/minus.svg"
+          "light": "resources/light/del.svg",
+          "dark": "resources/dark/del.svg"
         }
       },
       {
         "command": "sqlmapExplorer.addEntry",
         "title": "Add Namespace",
         "icon": {
-          "light": "resources/light/plus.svg",
-          "dark": "resources/dark/plus.svg"
+          "light": "resources/light/add.svg",
+          "dark": "resources/dark/add.svg"
         }
       },
       {
         "command": "sqlmapExplorer.delEntry",
         "title": "Delete Namespace",
         "icon": {
-          "light": "resources/light/minus.svg",
-          "dark": "resources/dark/minus.svg"
+          "light": "resources/light/del.svg",
+          "dark": "resources/dark/del.svg"
         }
       },
       {
@@ -83,28 +87,32 @@
         }
       },
       {
+        "command": "sqlmapExplorer.itemClicked",
+        "title": "cwt tree view item"
+      },
+      {
         "command": "sqlmapExplorer.contextMenuAddSelQry",
-        "title": "Add Select Query"
+        "title": "1. Select Query 추가"
       },
       {
         "command": "sqlmapExplorer.contextMenuAddUpdQry",
-        "title": "Add Update Query"
+        "title": "2. Update Query 추가"
       },
       {
         "command": "sqlmapExplorer.contextMenuAddInsQry",
-        "title": "Add Insert Query"
+        "title": "3. Insert Query 추가"
       },
       {
         "command": "sqlmapExplorer.contextMenuAddDelQry",
-        "title": "Add Delete Query"
-      },
-      {
-        "command": "sqlmapExplorer.contextMenuaddEntry",
-        "title": "Add Namespace"
+        "title": "4. Delete Query 추가"
       },
       {
         "command": "sqlmapExplorer.contextMenudelEntry",
-        "title": "Delete Query Or Namespace"
+        "title": "5. Query 삭제"
+      },
+      {
+        "command": "sqlmapExplorer.test",
+        "title": "test"
       }
     ],
     "viewsContainers": {
@@ -156,6 +164,11 @@
           "command": "sqlmapExplorer.refreshEntry",
           "when": "view == sqlmapExplorer",
           "group": "navigation"
+        },
+        {
+          "command": "sqlmapExplorer.search",
+          "when": "view == sqlmapExplorer",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -180,11 +193,6 @@
           "group": "navigation"
         },
         {
-          "command": "sqlmapExplorer.contextMenuaddEntry",
-          "when": "view == sqlmapExplorer",
-          "group": "navigation"
-        },
-        {
           "command": "sqlmapExplorer.contextMenudelEntry",
           "when": "view == sqlmapExplorer",
           "group": "navigation"
@@ -201,6 +209,13 @@
             "filenamePattern": "*.sql"
           }
         ]
+      }
+    ],
+    "themes": [
+      {
+        "label": "My Extension Theme",
+        "uiTheme": "vs-dark",
+        "path": "./src/webview/treeview.json"
       }
     ]
   },
@@ -228,6 +243,7 @@
   },
   "dependencies": {
     "@types/oracledb": "^5.2.4",
+    "@vscode/codicons": "^0.0.33",
     "@vscode/webview-ui-toolkit": "^1.2.1",
     "ftp": "^0.3.10",
     "jsonc-parser": "^0.4.2",

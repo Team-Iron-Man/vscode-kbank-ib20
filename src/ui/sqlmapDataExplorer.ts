@@ -4,17 +4,97 @@ import * as path from 'path'
 import { SqlConfigService } from "../modules/db/service/SqlConfigService";
 import { U2CSQLMAPCONFIG, U2C_SQLMAP_QUERY } from "../types/SqlConfig";
 
+
 export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 
 	public _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>()
 	public _onMessage = new vscode.EventEmitter<string>()
 	public readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 	public readonly onMessage: vscode.Event<string> = this._onMessage.event
-	private rootNodes: Dependency[] = []
-	
-	constructor(private workspaceRoot: string | undefined) { 
-		console.log('ALM#1-1 class constructor')
+	public rootNodes: Dependency[] = []
+	private searchText: string | undefined;
+	private filteredNodes: Dependency[] = [];
+	public treeView = vscode.window.createTreeView('sqlmapExplorer', {
+		treeDataProvider: this
+	});
+
+  setSearchText(text: string | undefined) {
+    this.searchText = text;
+    this.filteredNodes = this.getFilteredNodes(this.rootNodes);
+    this._onDidChangeTreeData.fire();
+  }
+
+  private getFilteredNodes(nodes: Dependency[]): Dependency[] {
+    if (!this.searchText) {
+      return nodes;
+    }
+
+    const filteredNodes: Dependency[] = [];
+    for (const node of nodes) {
+      if (node.label.includes(this.searchText)) {
+        filteredNodes.push(node);
+      }
+
+      const children = this.getFilteredNodes(node.children);
+      if (children.length > 0) {
+        const newNode = new Dependency(
+          node.label,
+          vscode.TreeItemCollapsibleState.Expanded,
+          true,
+          node.query
+        );
+        newNode.children = children;
+        filteredNodes.push(newNode);
+      }
+    }
+
+    return filteredNodes;
+  }
+	// Implement the search method
+  search(searchText: string) {
+    if (!searchText) {
+      return;
+			
+    }
+
+    this.setSearchText(searchText);
+  }
+
+  getChildren(element?: Dependency): Thenable<Dependency[]> {
+    if (!element) {
+      // Top-level nodes
+      return Promise.resolve(this.getFilteredNodes(this.rootNodes));
+    } else {
+      // Child nodes
+      return Promise.resolve(this.getFilteredNodes(element.children));
+    }
+  }
+	getParent(element: Dependency): Thenable<Dependency | undefined> {
+		console.log('ALM#1-1 getParent 호출됨 : getParent(element) : ', element.label)
+		element.parent = this.rootNodes[0]
 		
+		return Promise.resolve(element.parent)
+	}
+	constructor(context: vscode.ExtensionContext, private workspaceRoot: string | undefined) {
+		
+	console.log('ALM#1-1 class constructor')
+	//검색기능 시작
+	console.log('============= search 명령어 등록 진행 =============')
+	const search = vscode.commands.registerCommand('sqlmapExplorer.search', 
+
+		async () => {
+			const searchText = await vscode.window.showInputBox({
+				prompt: 'Enter search keyword',
+			});
+			if(searchText != undefined) 
+				this.search(searchText);
+		}
+		
+	)//끝
+	
+	context.subscriptions.push(search)
+	console.log('============= search 명령어 등록 완료 =============')
+	
 	}
 
 	sendMessage(message: string) {
@@ -23,6 +103,7 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 	}
 
 	refresh(node?: Dependency): void {
+
 		if (node === undefined) {
 			console.log("ALM#1-1 refresh(undefined) 호출됨")
 			this._onDidChangeTreeData.fire(undefined)
@@ -30,28 +111,18 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 			console.log("ALM#1-1 refresh(node) 호출됨", node.label)
 			this._onDidChangeTreeData.fire(node)
 		}
+		this.treeView.reveal(this.rootNodes[0], { focus: true , select: true});
 	}
 
 	getTreeItem(element: Dependency): vscode.TreeItem {
 		console.log('ALM#1-1 getTreeItem 호출됨')
-		return element
-	}
-
-	getChildren(element?: Dependency): Thenable<Dependency[]> {
-		console.log('ALM#1-1 getChildren 호출됨')
-		if (element === undefined) {
-			return Promise.resolve(this.rootNodes)
-		} else {
-			return Promise.resolve(element.children)
-		}
+		//return element
+		let title = element.label ? element.label.toString() : "";
+		let result = new vscode.TreeItem(title, element.collapsibleState);
+		result.command = { command: 'cwt_cucumber.on_itemClicked', title : title, arguments: [element] };
+    return result;
 
 	}
-	getParent(element: Dependency): Thenable<Dependency | undefined> {
-		console.log('ALM#1-1 getParent 호출됨 : getParent(element) : ', element.label)
-		element.parent = this.rootNodes[0]
-		return Promise.resolve(element.parent)
-	}
-
 	initNode() {
 		console.log('ALM#1-1 initNode 호출됨')
 		this.rootNodes = []
@@ -78,9 +149,10 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		this._onDidChangeTreeData.fire(parent);
 	}
 	deleteChildNode(parentNode: Dependency, childNode: Dependency) {
-		console.log('ALM#1-1 deleteChildNode 호출됨')
-		console.log("ALM#1-1 deleteChildNode parentNode:", parentNode.label)
-		console.log("ALM#1-1 deleteChildNode childNode:", childNode.label)
+		
+		console.log("ALM#1-1 deleteChildNode parentNode:", parentNode.query)
+		console.log("ALM#1-1 deleteChildNode childNode:", childNode.query)
+		
 		// Remove the child node from the parent's children array
 		const index = parentNode.children.indexOf(childNode)
 		console.log("5. deleteChildNode index:", index)
@@ -90,9 +162,17 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		// Refresh the TreeView to reflect the changes
 		this.refresh()
 		this._onDidChangeTreeData.fire(parentNode)
+
+		if(childNode.query != undefined){
+			this.delQry(childNode.query)	//IB20 쿼리 삭제
+		}
 	}
-
-
+	public async delQry(query:U2C_SQLMAP_QUERY) {
+		await SqlConfigService.delQry(query.SQLMAP_ID, query.QUERY_ID);
+	}
+	// INSERT INTO U2C_SQLMAP_QUERY (QUERY_ID, USE_YN, CREATE_USER, CREATE_DATE, UPDATE_USER, UPDATE_DATE, DESCRIPTION, QUERY_NAME, QUERY_TYPE, SQL_0, SQL_1, SQL_2, SQL_3, SQL_4, SQLMAP_ID, STATE)
+	// VALUES (1, 'Y', 'user1', '', 'user1', '', 'Sample Query 1', 'Query 1', 'S', 'SELECT * FROM table1', '', '', '', '', 11440, '01');
+	
 
 	public async handleMessage(selectedConfig: any): Promise<void> {
 
@@ -142,20 +222,33 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 	
 					if (namespace !== previousNamespace) {
 							rootNode = new Dependency(namespace, vscode.TreeItemCollapsibleState.Expanded);
+							//rootNode.isParent = true
+							rootNode.iconPath = new vscode.ThemeIcon('folder')
+							rootNode.query = query
 							this.setRootNode(rootNode);
 							previousNamespace = namespace;
 					}
 	
 					if (rootNode) {
 							const childNode = new Dependency(sqlname, vscode.TreeItemCollapsibleState.None);
-							this.setChildNode(rootNode, childNode);
+							this.setChildNode(rootNode, childNode)
+							//rootNode.isParent = false
+							childNode.iconPath = new vscode.ThemeIcon('database')
+							childNode.query = query
 							childNode.parent = rootNode.parent;
 					}
 			}
 			
-		});
+		}
+			
+		);
 
-		
+		// 트리 데이터 뷰 등록
+		// const treeView = vscode.window.createTreeView('sqlmapExplorer', {
+		// 	treeDataProvider: this
+		// });
+		//sqlmapProvider.refresh(); 
+		this.treeView.reveal(this.rootNodes[0], { focus: true , select: true});
 		
 		
 	}
@@ -169,6 +262,9 @@ export class SqlmapDataExplorer implements vscode.TreeDataProvider<Dependency> {
 		return true
 	}
 }
+
+
+
 export async function getSqlMap(configid: string|undefined) {
 	let u2csqlmapList: U2CSQLMAPCONFIG[]
 	let sqlmap: Map<string, string> = new Map()
@@ -191,16 +287,59 @@ export async function getSqlMapQueryList(sqlmapid: string) {
 	return u2csqlmapquery
 }
 
+
+export class Dependency extends vscode.TreeItem {
+    public parent: Dependency | undefined;
+    children: Dependency[] = [];
+  
+    constructor(
+        public readonly label: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+				public isParent?:boolean,
+				public query?: U2C_SQLMAP_QUERY,
+        public readonly command?: vscode.Command,
+        parent?: Dependency,
+        children: Dependency[] = []
+    ) {
+        super(label, collapsibleState);
+        this.parent = parent;
+        this.children = children;
+        this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        //this.iconPath = this.getIconPath();
+				//this.query = query
+    }
+  
+    private getIconPath(): string | vscode.ThemeIcon {
+        
+        if (this.isParent) {
+					// Use Codicon for parent nodes
+					// return new vscode.ThemeIcon('folder');
+					//https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
+					return new vscode.ThemeIcon('folder');
+				} else {
+						// Use Codicon for child nodes
+						//return new vscode.ThemeIcon('file');
+						return new vscode.ThemeIcon('database');
+				}
+    }
+  
+    contextValue = 'dependency';
+}
+
+
+/*
+
 export class Dependency extends vscode.TreeItem {
 	public parent: Dependency | undefined
 	children: Dependency[] = []
 	constructor(
 		public readonly label: string,
+		public readonly isParent:boolean,
 		//private readonly version: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public readonly command?: vscode.Command,
 		parent?: Dependency,
-		children: Dependency[] = []
+		children: Dependency[] = [], 
 
 	) {
 		console.log('ALM#1-1 class Dependency constructor: Tree아이템 제작')
@@ -211,6 +350,15 @@ export class Dependency extends vscode.TreeItem {
 
 	}
 
+	private getIconPath(): vscode.Uri | string | vscode.ThemeIcon {
+		if (this.isParent) {
+				// Use Codicon for parent nodes
+				return new vscode.ThemeIcon('folder');
+		} else {
+				// Use Codicon for child nodes
+				return new vscode.ThemeIcon('file');
+		}
+	}
 	iconPath = {
 		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
@@ -218,3 +366,4 @@ export class Dependency extends vscode.TreeItem {
 
 	contextValue = 'dependency'
 }
+*/
